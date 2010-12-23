@@ -32,7 +32,7 @@ class FullyQualified(object):
     PARENT_DIR_1683b96af50b3bd9 = os.path.join(USER_HOME, ".gentle_data_1683b96af50b3bd9")
     CONTENT_DB_DIR_6ebc8ee8333c1f4c = os.path.join(PARENT_DIR_1683b96af50b3bd9, "content_db_6ebc8ee8333c1f4c")
     POINTER_DB_DIR_8b3675814942c0fe = os.path.join(PARENT_DIR_1683b96af50b3bd9, "pointer_db_8b3675814942c0fe")
-    
+
     # Make sure those above directories exist
     for directory in (PARENT_DIR_1683b96af50b3bd9, CONTENT_DB_DIR_6ebc8ee8333c1f4c, POINTER_DB_DIR_8b3675814942c0fe):
         if not os.path.exists(directory):
@@ -62,66 +62,66 @@ class FullyQualified(object):
         return None
 
     ## FUNDAMENTAL OPERATIONS IN A GENTLE SYSTEM
-    
+
     @staticmethod
     def sha1_42f2ba4c350bc32a(byte_string):
         sha1_object = sha1()
         sha1_object.update(byte_string)
         return sha1_object.hexdigest()
-    
+
     @staticmethod
     def store_data_b1b4129b91991705(byte_string):
         sha1fn = g.ntl("42f2ba4c350bc32a")
         content_db_dir = g.ntl("6ebc8ee8333c1f4c")
-        
+
         sha1key = sha1fn(byte_string)
         filename = os.path.join(content_db_dir, sha1key)
         file(filename, "wb").write(byte_string)
         return sha1key
-    
+
     @staticmethod
     def remove_data_88eea22244f81249(sha1key):
         content_db_dir = g.ntl("6ebc8ee8333c1f4c")
-        
+
         filename = os.path.join(content_db_dir, sha1key)
         os.remove(filename)
-   
+
     @staticmethod
     def get_data_056702875ab4e43b(sha1key):
         content_db_dir = g.ntl("6ebc8ee8333c1f4c")
-        
+
         filename = os.path.join(content_db_dir, sha1key)
         byte_string = file(filename, "rb").read()
         return byte_string
-    
+
     @staticmethod
     def generate_ptr_142e69d252889f3c():
         key_length = 128 / 8  # 128 bits, 16 bytes
         ptrkey = os.urandom(key_length)
         return ptrkey.encode("hex")  # 16 -> 32 bytes
-    
+
     @staticmethod
     def store_ptr_2c98aaa88cfdc9fc(ptrkey, sha1key):
         pointer_db_dir = g.ntl("8b3675814942c0fe")
-        
+
         filename = os.path.join(pointer_db_dir, ptrkey)
         file(filename, "wb").write(sha1key)
-    
+
     @staticmethod
     def remove_ptr_5518ac3c5c6eb04d(ptrkey):
         pointer_db_dir = g.ntl("8b3675814942c0fe")
-        
+
         filename = os.path.join(pointer_db_dir, ptrkey)
         os.remove(filename)
-    
+
     @staticmethod
     def follow_ptr_711d9d3ba40a10ee(ptrkey):
         pointer_db_dir = g.ntl("8b3675814942c0fe")
-        
+
         filename = os.path.join(pointer_db_dir, ptrkey)
         sha1key = file(filename, "rb").read()
         return sha1key
-        
+
 
 import gentle_tech_preview_da92de4118f6fa91 as g
 FQ = FullyQualified
