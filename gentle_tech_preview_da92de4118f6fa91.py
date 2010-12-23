@@ -136,3 +136,24 @@ store_ptr = g.ntl("2c98aaa88cfdc9fc")
 remove_ptr = g.ntl("5518ac3c5c6eb04d")
 follow_ptr = g.ntl("711d9d3ba40a10ee")
 
+
+## COMMAND LINE INTERFACE
+
+# Usage:
+# python -m gentle_tech_preview_da92de4118f6fa91 <identifier> <arguments>
+
+if __name__ == "__main__":
+    import sys
+    identifier = sys.argv[1]
+    args = sys.argv[2:]
+    fn = g.ntl(identifier)
+    if fn == store_data:
+        byte_string = sys.stdin.read()
+        print fn(byte_string)
+    elif fn == get_data:
+        byte_string = fn(*args)
+        sys.stdout.write(byte_string)
+    else:
+        result = fn(*args)
+        if result is not None:
+            print result
