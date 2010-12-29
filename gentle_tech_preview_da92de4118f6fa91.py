@@ -76,7 +76,8 @@ class FullyQualified(object):
 
         sha1key = sha1fn(byte_string)
         filename = os.path.join(content_db_dir, sha1key)
-        file(filename, "wb").write(byte_string)
+        if not os.path.exists(filename):
+            file(filename, "wb").write(byte_string)
         return sha1key
 
     @staticmethod
