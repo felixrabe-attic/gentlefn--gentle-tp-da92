@@ -12,11 +12,61 @@ The second dictionary, called the pointer database, stores references to these
 SHA1 keys.  The value is the SHA1 sum, and the key is a generated 128-bit
 random number.  The value is mutable.
 
-For the bootstrapping mechanism that surrounds the data store, generated random
-64-bit numbers are used as the definitive keys, if for no other reason than to
-help to stop thinking in terms of (more often than not) poorly-chosen
-identifiers.  So the bootstrap process is actually twofold, with both a
-technical as well as a philosophical component.
+
+First steps
+-----------
+
+Put / install / link gentle_da92de4118f6fa91.py somewhere in your PYTHONPATH
+(or do the following tutorial in the same directory as that Python module).
+
+The module has a command-line interface which can be neatly aliased:
+
+    $ alias g='python -m gentle_da92de4118f6fa91'
+
+If you wonder where the following data ends up, you will find it in the
+directory '~/.gentle_da92de4118f6fa91'.
+
+You can put a Hello World into the content database:
+
+    $ echo "Hello World" | g put
+    d2a84f4b8b650937ec8f73cd8be2c74add5a911ba64df27458ed8229da804a26
+    $ g get d2a8
+    Hello World
+
+Content is identified by its SHA-256 hash value.  As long as it is unique,
+the identifier can be abbreviated.
+
+To point to changing content, a pointer with a random-generated 256-bit
+identifier can refer to a hash value:
+
+    $ PTR=$(g random)
+    $ echo $PTR
+    de964224d0c4862024bf49462048d2d1a29738dbf3dfd3744e1832f6eff5e244
+    $ g put $PTR d2a8
+    $ g get $PTR
+    d2a84f4b8b650937ec8f73cd8be2c74add5a911ba64df27458ed8229da804a26
+    $ g get $(g get $PTR)
+    Hello World
+    $ echo "Another Hello World" | g put
+    062043cad71efc24e5e0eeec1821621e9c5e7f1fff6ffefe63ce160e87f5d726
+    $ g put $PTR 06204
+    $ g get $PTR
+    062043cad71efc24e5e0eeec1821621e9c5e7f1fff6ffefe63ce160e87f5d726
+    $ g get $(g get $PTR)
+    Another Hello World
+
+Saving the same data (data with the same SHA-256 hash value) again will do no
+harm:
+
+    $ echo "Another Hello World" | g put
+    062043cad71efc24e5e0eeec1821621e9c5e7f1fff6ffefe63ce160e87f5d726
+
+Content can also easily be removed:
+
+    $ for IDENTIFIER in d2a8 de96 0620 ; do g remove $IDENTIFIER ; done
+
+All these commands are also readily available as Python functions within the
+gentle_da92de4118f6fa91 module.
 
 
 License: LGPL 2.1+
@@ -45,8 +95,8 @@ Dependencies
 * Python 2.6 or later (Python 3.x is not supported)
 
 
-Future features
----------------
+Ideas for future features
+-------------------------
 
 * Smallest possible bootstrapping
     - Move most Python code into the Gentle data store
