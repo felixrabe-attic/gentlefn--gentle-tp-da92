@@ -6,7 +6,7 @@ Gentle Technology Preview (da92de4118f6fa91)
 
 Full identifier: da92de4118f6fa915b6bdd73f090ad57dc153082600855e5c7a85e8fe054c5a1
 """
-# Copyright (C) 2010  Felix Rabe
+# Copyright (C) 2010, 2011  Felix Rabe
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
