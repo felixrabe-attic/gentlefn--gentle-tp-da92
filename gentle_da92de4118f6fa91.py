@@ -113,6 +113,10 @@ class Gentle(object):
             filename = os.path.join(Gentle.POINTER_DIR, pointer_key)
             with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY, 0600), "wb") as f:
                 f.write(hash_value)
+            # Returning the pointer key enables (assuming the 'g' alias):
+            #   Python: content_ptr = g.put(g.random(), g.put(content))
+            #   Bash:   g put $(g random) $(g put < content) > content.ptr
+            return pointer_key
 
     @staticmethod
     def get(identifier):
