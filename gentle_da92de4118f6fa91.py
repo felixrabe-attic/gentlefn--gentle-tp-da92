@@ -91,7 +91,8 @@ def put(a, b=None):
         hash_value = sha256(byte_string)
         filename = os.path.join(CONTENT_DIR, hash_value)
         if not os.path.exists(filename):
-            open(filename, "wb").write(byte_string)
+            with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY, 0400), "wb") as f:
+                f.write(byte_string)
         return hash_value
     else:  # write new pointer or change it
         pointer_key, identifier = a, b
@@ -99,7 +100,8 @@ def put(a, b=None):
         if directory != CONTENT_DIR:
             raise TypeError("second argument must be a content hash value")
         filename = os.path.join(POINTER_DIR, pointer_key)
-        open(filename, "wb").write(hash_value)
+        with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY, 0600), "wb") as f:
+            f.write(hash_value)
 
 
 def get(identifier):
