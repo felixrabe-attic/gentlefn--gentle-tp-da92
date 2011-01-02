@@ -145,7 +145,7 @@ def _gentle_init():
     """
     for directory in (DATA_DIR, CONTENT_DIR, POINTER_DIR):
         if not os.path.exists(directory):
-            os.mkdir(directory)
+            os.mkdir(directory, 0700)
     # TODO: Bootstrap the gentle object from the databases.
     return None
 
