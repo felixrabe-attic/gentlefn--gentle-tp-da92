@@ -128,7 +128,7 @@ def get(identifier):
         return hash_value
 
 
-def remove(identifier):
+def rm(identifier):
     """
     Remove content from the content database, or a pointer from the pointer
     database.
