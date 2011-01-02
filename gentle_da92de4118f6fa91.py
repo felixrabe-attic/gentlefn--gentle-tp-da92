@@ -157,13 +157,12 @@ class Gentle(object):
             filename = os.path.join(directory, identifier)
             os.remove(filename)
 
-gentle = Gentle()
-
 
 def main(argv):
     """
     Command line interface.
     """
+    gentle = Gentle()
     function_name, args = argv[1], argv[2:]
     fn = getattr(gentle, function_name)
     if fn in (Gentle.sha256, Gentle.put) and len(args) == 0:
