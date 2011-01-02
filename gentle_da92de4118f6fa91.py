@@ -145,18 +145,17 @@ class Gentle(object):
             return hash_value
 
     @staticmethod
-    def rm(identifier):
+    def rm(*identifiers):
         """
-        Remove content from the content database, or a pointer from the pointer
-        database.
+        Remove content from the content database or from the pointer database.
         
         The identifier must match the beginning of the key of exactly one entry in
         either one database.
         """
-        directory, identifier = Gentle.full(identifier)
-        filename = os.path.join(directory, identifier)
-        os.remove(filename)
-
+        for identifier in identifiers:
+            directory, identifier = Gentle.full(identifier)
+            filename = os.path.join(directory, identifier)
+            os.remove(filename)
 
 gentle = Gentle()
 

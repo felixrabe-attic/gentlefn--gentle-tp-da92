@@ -70,7 +70,7 @@ harm:
 
 Content can also easily be removed:
 
-    $ for IDENTIFIER in d2a8 $PTR 0620 ; do g rm $IDENTIFIER ; done
+    $ g rm d2a8 $PTR 0620
 
 All these commands are also readily available from within Python as methods of
 the gentle object:
