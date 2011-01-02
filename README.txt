@@ -63,7 +63,7 @@ harm:
 
 Content can also easily be removed:
 
-    $ for IDENTIFIER in d2a8 de96 0620 ; do g remove $IDENTIFIER ; done
+    $ for IDENTIFIER in d2a8 de96 0620 ; do g rm $IDENTIFIER ; done
 
 All these commands are also readily available as Python functions within the
 gentle_da92de4118f6fa91 module.
