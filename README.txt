@@ -72,13 +72,22 @@ Content can also easily be removed:
 
     $ g rm d2a8 $PTR 0620
 
-All these commands are also readily available from within Python as methods of
-the gentle object:
+Please note that changing a pointer does *not* remove the content that it has
+previously pointed to.  This is by design, as multiple pointers might refer to
+the same content, and even some content might contain references to other
+content.
 
-    from gentle_da92de4118f6fa91 import gentle as g
-    new_ptr = g.random()
-    new_hash = g.put("This is some new content\n")
-    g.put(new_ptr, new_hash)
+To clear the whole database of the tech preview:
+
+    $ rm -rf ~/.gentle_da92de4118f6fa91
+
+All these commands are also conveniently available from within Python as
+methods of the Gentle class:
+
+    from gentle_da92de4118f6fa91 import Gentle
+    g = Gentle()
+    new_ptr = g.put(g.random(), g.put("This is some new content\n"))
+    new_hash = g.get(new_ptr)
     print new_ptr, "->", new_hash
 
 
