@@ -65,8 +65,14 @@ Content can also easily be removed:
 
     $ for IDENTIFIER in d2a8 $PTR 0620 ; do g rm $IDENTIFIER ; done
 
-All these commands are also readily available as Python functions within the
-gentle_da92de4118f6fa91 module.
+All these commands are also readily available from within Python as methods of
+the gentle object:
+
+    from gentle_da92de4118f6fa91 import gentle as g
+    new_ptr = g.random()
+    new_hash = g.put("This is some new content\n")
+    g.put(new_ptr, new_hash)
+    print new_ptr, "->", new_hash
 
 
 License: LGPL 2.1+
