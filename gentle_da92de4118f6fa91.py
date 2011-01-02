@@ -86,14 +86,14 @@ def put(a, b=None):
     
     In the first usage, return the SHA-256 hash value of the entered content.
     """
-    if b is None:
+    if b is None:  # write new content
         byte_string = a
         hash_value = sha256(byte_string)
         filename = os.path.join(CONTENT_DIR, hash_value)
         if not os.path.exists(filename):
             file(filename, "wb").write(byte_string)
         return hash_value
-    else:
+    else:  # write new pointer or change it
         pointer_key, identifier = a, b
         directory, hash_value = full(identifier)
         if directory != CONTENT_DIR:
