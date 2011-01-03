@@ -167,12 +167,12 @@ def main(argv):
     gentle = Gentle()
     function_name, args = argv[1], argv[2:]
     fn = getattr(gentle, function_name)
-    if fn in (Gentle.sha256, Gentle.put) and len(args) == 0:
+    if fn in (gentle.sha256, gentle.put) and len(args) == 0:
         byte_string = sys.stdin.read()
         print fn(byte_string)
         return
-    elif fn is Gentle.get:
-        directory, identifier = Gentle.full(args[0])
+    elif fn is gentle.get:
+        directory, identifier = gentle.full(args[0])
         if directory == Gentle.CONTENT_DIR:
             byte_string = fn(*args)
             sys.stdout.write(byte_string)
