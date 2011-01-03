@@ -131,7 +131,7 @@ license text.
 Dependencies
 ------------
 
-* Python 2.6 or later (Python 3.x is not supported)
+* Python 2.6 or later (Python 3.x is not supported at the moment)
 
 
 Ideas for future features
