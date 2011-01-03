@@ -89,11 +89,12 @@ class Gentle(object):
         database.
         
         Example:
-        >>> put("content")
+        >>> gentle.put("content")
         'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73'
-        >>> random()
+        >>> gentle.random()
         '80834436d97b9327eb8138c907f57c205b3d7ba9a962d7cf72849993e909c299'
-        >>> put("80834436d97b9327eb8138c907f57c205b3d7ba9a962d7cf72849993e909c299", "ed7002")
+        >>> gentle.put("80834436d97b9327eb8138c907f57c205b3d7ba9a962d7cf72849993e909c299", "ed7002")
+        '80834436d97b9327eb8138c907f57c205b3d7ba9a962d7cf72849993e909c299'
         
         In the first usage, return the SHA-256 hash value of the entered content.
         """
@@ -102,6 +103,7 @@ class Gentle(object):
             hash_value = Gentle.sha256(byte_string)
             filename = os.path.join(Gentle.CONTENT_DIR, hash_value)
             if not os.path.exists(filename):
+                # Git also gives pre-existing immutable content priority for a reason.
                 with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY, 0400), "wb") as f:
                     f.write(byte_string)
             return hash_value
@@ -125,9 +127,9 @@ class Gentle(object):
         pointer database.
         
         Example:
-        >>> get("808344")
+        >>> gentle.get("808344")
         'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73'
-        >>> get("ed7002")
+        >>> gentle.get("ed7002")
         'content'
         
         The identifier must match the beginning of the key of exactly one entry in
