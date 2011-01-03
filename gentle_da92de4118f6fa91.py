@@ -169,7 +169,7 @@ def main(argv):
         byte_string = sys.stdin.read()
         print fn(byte_string)
         return
-    elif fn is gentle.get:
+    elif fn == gentle.get:
         directory, identifier = gentle.full(args[0])
         if directory == gentle.content_dir:
             byte_string = fn(*args)
