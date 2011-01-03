@@ -30,15 +30,17 @@ class Gentle(object):
 
     # Locations of the content and pointer databases:
     USER_HOME = os.path.expanduser("~")
-    DATA_DIR = os.path.join(USER_HOME, ".gentle_da92de4118f6fa91")
-    CONTENT_DIR = os.path.join(DATA_DIR, "content_db")
-    POINTER_DIR = os.path.join(DATA_DIR, "pointer_db")
+    DEFAULT_DATA_DIR = os.path.join(USER_HOME, ".gentle_da92de4118f6fa91")
 
-    def __init__(self):
+    def __init__(self, data_dir=DEFAULT_DATA_DIR):
         super(Gentle, self).__init__()
         
+        self.data_dir = data_dir
+        self.content_dir = os.path.join(self.data_dir, "content_db")
+        self.pointer_dir = os.path.join(self.data_dir, "pointer_db")
+        
         # Make sure the database directories exist.
-        for directory in (Gentle.DATA_DIR, Gentle.CONTENT_DIR, Gentle.POINTER_DIR):
+        for directory in (self.data_dir, self.content_dir, self.pointer_dir):
             if not os.path.exists(directory):
                 os.mkdir(directory, 0700)
     
@@ -64,16 +66,15 @@ class Gentle(object):
         """
         return os.urandom(256 / 8).encode("hex")
 
-    @staticmethod
-    def full(identifier):
+    def full(self, identifier):
         """
         Return the full version of a possibly abbreviated identifier.
         
         The identifier must match the beginning of the key of exactly one entry in
         either one database.
         """
-        contents = glob.glob(os.path.join(Gentle.CONTENT_DIR, identifier) + "*")
-        pointers = glob.glob(os.path.join(Gentle.POINTER_DIR, identifier) + "*")
+        contents = glob.glob(os.path.join(self.content_dir, identifier) + "*")
+        pointers = glob.glob(os.path.join(self.pointer_dir, identifier) + "*")
         matches = contents + pointers
         if len(matches) == 0:
             raise Exception("neither content nor pointer found for identifier '%s'" % identifier)
@@ -82,8 +83,7 @@ class Gentle(object):
         directory, identifier = os.path.split(matches[0])
         return (directory, identifier)
 
-    @staticmethod
-    def put(a, b=None):
+    def put(self, a, b=None):
         """
         Enter content into the content database, or change a pointer in the pointer
         database.
@@ -100,8 +100,8 @@ class Gentle(object):
         """
         if b is None:  # write new content
             byte_string = a
-            hash_value = Gentle.sha256(byte_string)
-            filename = os.path.join(Gentle.CONTENT_DIR, hash_value)
+            hash_value = self.sha256(byte_string)
+            filename = os.path.join(self.content_dir, hash_value)
             if not os.path.exists(filename):
                 # Git also gives pre-existing immutable content priority for a reason.
                 with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY, 0400), "wb") as f:
@@ -109,10 +109,10 @@ class Gentle(object):
             return hash_value
         else:  # write new pointer or change it
             pointer_key, identifier = a, b
-            directory, hash_value = Gentle.full(identifier)
-            if directory != Gentle.CONTENT_DIR:
+            directory, hash_value = self.full(identifier)
+            if directory != self.content_dir:
                 raise TypeError("second argument must be a content hash value")
-            filename = os.path.join(Gentle.POINTER_DIR, pointer_key)
+            filename = os.path.join(self.pointer_dir, pointer_key)
             with os.fdopen(os.open(filename, os.O_CREAT | os.O_WRONLY, 0600), "wb") as f:
                 f.write(hash_value)
             # Returning the pointer key enables (assuming the 'g' alias):
@@ -120,8 +120,7 @@ class Gentle(object):
             #   Bash:   g put $(g random) $(g put < content) > content.ptr
             return pointer_key
 
-    @staticmethod
-    def get(identifier):
+    def get(self, identifier):
         """
         Get content from the content database, or follow a pointer from the
         pointer database.
@@ -135,19 +134,18 @@ class Gentle(object):
         The identifier must match the beginning of the key of exactly one entry in
         either one database.
         """
-        directory, identifier = Gentle.full(identifier)
+        directory, identifier = self.full(identifier)
         filename = os.path.join(directory, identifier)
         # This 'if' statement is not strictly necessary, but it illustrates the
         # nature of the returned value:
-        if directory == Gentle.CONTENT_DIR:
+        if directory == self.content_dir:
             byte_string = open(filename, "rb").read()
             return byte_string
         else:
             hash_value = open(filename, "rb").read()
             return hash_value
 
-    @staticmethod
-    def rm(*identifiers):
+    def rm(self, *identifiers):
         """
         Remove content from the content database or from the pointer database.
         
@@ -155,7 +153,7 @@ class Gentle(object):
         either one database.
         """
         for identifier in identifiers:
-            directory, identifier = Gentle.full(identifier)
+            directory, identifier = self.full(identifier)
             filename = os.path.join(directory, identifier)
             os.remove(filename)
 
@@ -173,7 +171,7 @@ def main(argv):
         return
     elif fn is gentle.get:
         directory, identifier = gentle.full(args[0])
-        if directory == Gentle.CONTENT_DIR:
+        if directory == gentle.content_dir:
             byte_string = fn(*args)
             sys.stdout.write(byte_string)
             return
