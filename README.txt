@@ -90,6 +90,20 @@ To clear the whole database of the tech preview:
 
     $ rm -rf ~/.gentle_da92de4118f6fa91
 
+Gentle can tell you the position of the data directory:
+
+    $ g getdir
+    /home/you/.gentle_da92de4118f6fa91
+
+You can change the position of the directory either in Python by passing a
+pathname to the constructor of 'Gentle', or from the command line by setting
+the environment variable 'GENTLE_DA92DE41_DIR':
+
+    $ export GENTLE_DA92DE41_DIR=/tmp/some_gentle_experiment
+    $ g getdir
+    /tmp/some_gentle_experiment
+    $ rm -rf "$(g getdir)"
+
 
 Copyright statement
 -------------------

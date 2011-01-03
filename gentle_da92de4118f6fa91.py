@@ -31,10 +31,13 @@ class Gentle(object):
     # Locations of the content and pointer databases:
     USER_HOME = os.path.expanduser("~")
     DEFAULT_DATA_DIR = os.path.join(USER_HOME, ".gentle_da92de4118f6fa91")
+    ENVIRON_DATA_DIR_KEY = "GENTLE_DA92DE41_DIR"
 
-    def __init__(self, data_dir=DEFAULT_DATA_DIR):
+    def __init__(self, data_dir=None):
         super(Gentle, self).__init__()
         
+        if data_dir is None:
+            data_dir = os.environ.get(self.ENVIRON_DATA_DIR_KEY, self.DEFAULT_DATA_DIR)
         self.data_dir = data_dir
         self.content_dir = os.path.join(self.data_dir, "content_db")
         self.pointer_dir = os.path.join(self.data_dir, "pointer_db")
@@ -43,6 +46,9 @@ class Gentle(object):
         for directory in (self.data_dir, self.content_dir, self.pointer_dir):
             if not os.path.exists(directory):
                 os.mkdir(directory, 0700)
+    
+    def getdir(self):
+        return self.data_dir
     
     @staticmethod
     def sha256(byte_string):
