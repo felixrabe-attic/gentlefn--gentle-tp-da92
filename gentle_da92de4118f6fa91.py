@@ -167,6 +167,7 @@ class Gentle(object):
         """
         Command line interface.
         """
+        import sys
         fn = getattr(self, function_name)
         if fn in (self.sha256, self.put) and len(args) == 0:
             byte_string = sys.stdin.read()
