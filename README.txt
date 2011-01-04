@@ -1,6 +1,10 @@
 Gentle Technology Preview (da92de4118f6fa91)
 ============================================
 
+The explicit goal of Gentle is to FUNDAMENTALLY SIMPLIFY COMPUTER PROGRAMMING
+AND USER INTERFACES.  The design of this tech preview resulted from years of
+intensive education, thinking and development.
+
 This Technology Preview implements the fundamental operations needed to store
 and retrieve data on a computer, using two simple dictionary data structures.
 
@@ -12,29 +16,90 @@ The second dictionary, called the pointer database, stores references to these
 SHA1 keys.  The value is the SHA1 sum, and the key is a generated 128-bit
 random number.  The value is mutable.
 
+There is a third identifier namespace of a smiliar nature.  It actually does
+not store any data, and the only meaningful method that operates on it is the
+random number generator which is also used for the pointer database.
+Identifiers in this namespace are not backed by data.  Rather, they can be used
+to represent real objects, like buildings, people, computer equipment, and so
+forth.  This very technology preview uses the identifier
+    da92de4118f6fa915b6bdd73f090ad57dc153082600855e5c7a85e8fe054c5a1
+in exactly this way.  This identifier is unique and long-lasting, more so than
+a project name or URL.
 
-First steps
------------
 
-Put / install / link gentle_da92de4118f6fa91.py somewhere in your PYTHONPATH
-(or do the following tutorial in the same directory as that Python module).
+Installation (optional)
+-----------------------
 
-The module has a command-line interface which can be neatly aliased:
+You may want to copy or link the included Python modules somewhere on your
+PYTHONPATH.
 
-    $ alias g='python -m gentle_da92de4118f6fa91'
 
-If you wonder where the following data ends up, you will find it in the
-directory '~/.gentle_da92de4118f6fa91'.
+Command Line Tutorial: Setup
+----------------------------
 
-You can put a Hello World into the content database:
+This tutorial assumes that you know and use Bash.
+
+Change into the directory where those modules can be found:
+
+    gentle_da92de4118f6fa91.py
+        This is the module which implements the very heart of Gentle.  This set
+        of features is what distinguishes Gentle from all other systems out
+        there.
+
+    gentle_da92de4118f6fa91_next.py
+        You can think of this module as some kind of subclass of
+        gentle_da92de4118f6fa91.  It extends gentle_da92de4118f6fa91 with
+        features that are the next step, the next level up
+        
+The modules have a convenient command-line interface if aliased:
+
+    $ alias g='python -m gentle_da92de4118f6fa91_next'
+
+(You can also use ". setenv.sh" to do that.)
+
+Gentle (currently) simply uses a directory to store its two databases.  It is
+very easy to find out where they are stored:
+
+    $ g getdir
+    /home/frog/.gentle_da92de4118f6fa91
+
+The use of any Gentle programming interface (either from the shell or by
+creating a Gentle instance in Python), even the 'getdir' command, causes the
+data directory to be created if it does not already exist, silently and
+automatically.
+
+    $ ls -al /home/frog/.gentle_da92de4118f6fa91
+    total 16
+    drwx------  4 fr fr 4096 Jan  3 01:10 .
+    drwxr-xr-x 55 fr fr 4096 Jan  4 23:19 ..
+    drwx------  2 fr fr 4096 Jan  3 01:16 content_db
+    drwx------  2 fr fr 4096 Jan  3 01:16 pointer_db
+
+
+Command Line Tutorial: Content
+------------------------------
+
+Let's start using Gentle for real, by putting a "Hello World\n" into the
+content database:
 
     $ echo "Hello World" | g put
     d2a84f4b8b650937ec8f73cd8be2c74add5a911ba64df27458ed8229da804a26
     $ g get d2a8
     Hello World
 
-Content is identified by its SHA-256 hash value.  As long as it is unique,
-the identifier can be abbreviated.
+Content is identified by its SHA-256 hash value.  You will get the same result
+if using sha256sum, and Gentle also makes the sha256 function public:
+
+    $ echo "Hello World" | sha256sum 
+    d2a84f4b8b650937ec8f73cd8be2c74add5a911ba64df27458ed8229da804a26  -
+    $ echo "Hello World" | g sha256
+    d2a84f4b8b650937ec8f73cd8be2c74add5a911ba64df27458ed8229da804a26
+
+As long as it is unique, the identifier can be abbreviated, like "d2a8" above.
+
+
+Command Line Tutorial: Pointers
+-------------------------------
 
 To point to changing content, a pointer with a random-generated 256-bit
 identifier can refer to a hash value:
@@ -62,8 +127,8 @@ for some content can be done in a more straightforward way:
 
     $ g put $(g random) $(g put < content) > content.ptr
 
-Saving the same data (data with the same SHA-256 hash value) again will do no
-harm:
+Saving the same data again, i.e. data with the same SHA-256 hash value, will do
+no harm:
 
     $ echo "Another Hello World" | g put
     062043cad71efc24e5e0eeec1821621e9c5e7f1fff6ffefe63ce160e87f5d726
@@ -71,6 +136,36 @@ harm:
 Content can also easily be removed:
 
     $ g rm d2a8 $PTR 0620
+
+Please note that changing a pointer does *not* remove the content that it has
+previously pointed to.  This is by design, as multiple pointers might refer to
+the same content, and even some content might contain references to other
+content.  There are several possible ways to clean up content that is no longer
+needed, like: only keeping what is reachable by pointers; removal after some
+expiration date; merging some of the contents with another database, then
+removing the original one; and so forth.
+
+To remove (or 'clear') the whole data directory of the tech preview:
+
+    $ rm -rf "$(g getdir)"
+
+The position of the tech preview data directory can be changed by setting the
+environment variable 'GENTLE_DA92DE41_DIR':
+
+    $ export GENTLE_DA92DE41_DIR=/tmp/some_gentle_experiment
+    $ g getdir
+    /tmp/some_gentle_experiment
+    $ rm -rf "$(g getdir)"
+
+
+Command Line Tutorial: The Next Module
+--------------------------------------
+
+(TODO)
+
+
+Python Module Tutorial: The Core Module
+---------------------------------------
 
 All these commands are also conveniently available from within Python as
 methods of the Gentle class:
@@ -80,29 +175,6 @@ methods of the Gentle class:
     new_ptr = g.put(g.random(), g.put("This is some new content\n"))
     new_hash = g.get(new_ptr)
     print new_ptr, "->", new_hash
-
-Please note that changing a pointer does *not* remove the content that it has
-previously pointed to.  This is by design, as multiple pointers might refer to
-the same content, and even some content might contain references to other
-content.
-
-To clear the whole database of the tech preview:
-
-    $ rm -rf ~/.gentle_da92de4118f6fa91
-
-Gentle can tell you the position of the data directory:
-
-    $ g getdir
-    /home/you/.gentle_da92de4118f6fa91
-
-You can change the position of the directory either in Python by passing a
-pathname to the constructor of 'Gentle', or from the command line by setting
-the environment variable 'GENTLE_DA92DE41_DIR':
-
-    $ export GENTLE_DA92DE41_DIR=/tmp/some_gentle_experiment
-    $ g getdir
-    /tmp/some_gentle_experiment
-    $ rm -rf "$(g getdir)"
 
 
 Copyright statement
@@ -137,14 +209,22 @@ Dependencies
 Ideas for future features
 -------------------------
 
+* Proper setup.py for installing the modules
+* Public key encryption and signature
+* Fine-grained web of trust
+* Fine-grained software and data structure modularity and distribution
+* Fine-grained commerce (Flattr? Bitcoin?)
+* Facilities for merging (parts of) multiple repositories together
+* A graphical user interface
 * Smallest possible bootstrapping
     - Move most Python code into the Gentle data store
 * Version control and global undo
 * Indexed meta data (maybe employing map/reduce)
 * Interfaces to legacy software:
-    - virtual file system
+    - virtual file system (FUSE)
     - mail server (SMTP + IMAP/POP3)
     - HTTP
-    - command line
-    - programming language APIs
-
+* Programming language APIs for C, C#, Java, Javascript, Perl, PHP, Python 3
+* Email
+* Programming IDE
+* The Web how it should have been
