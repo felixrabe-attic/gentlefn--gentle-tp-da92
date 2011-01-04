@@ -124,7 +124,7 @@ identifier can refer to a hash value:
     Another Hello World
 
 As 'g put' with two arguments returns the pointer's key, creating a new pointer
-for some content can be done in a more straightforward way:
+can be done in a more straightforward way:
 
     $ g put $(g random) $(g put < content) > content.ptr
 
