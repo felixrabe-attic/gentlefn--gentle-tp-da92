@@ -178,6 +178,10 @@ class Gentle(object):
                 byte_string = fn(*args)
                 sys.stdout.write(byte_string)
                 return
+        elif fn == self.full:
+            # On the command line, I simply want to expand an abbreviation:
+            print fn(*args)[1]
+            return
         result = fn(*args)
         if result is not None:
             print result
