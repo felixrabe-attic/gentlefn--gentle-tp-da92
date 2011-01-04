@@ -9,8 +9,8 @@ This Technology Preview implements the fundamental operations needed to store
 and retrieve data on a computer, using two simple dictionary data structures.
 
 One dictionary, called the content database, is a content-addressable store.
-The value is the data content, and the key is the SHA1 sum of that value.  By
-their nature, the key-value entries in the content database are immutable.
+The value is the data content, and the key is the SHA-256 sum of that value.
+The key-value entries in the content database are inherently immutable.
 
 The second dictionary, called the pointer database, stores references to these
 SHA1 keys.  The value is the SHA1 sum, and the key is a generated 128-bit
