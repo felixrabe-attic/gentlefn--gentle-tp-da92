@@ -35,27 +35,27 @@ class Gentle(object):
 
     def __init__(self, data_dir=None):
         super(Gentle, self).__init__()
-        
+
         if data_dir is None:
             data_dir = os.environ.get(self.ENVIRON_DATA_DIR_KEY, self.DEFAULT_DATA_DIR)
         self.data_dir = data_dir
         self.content_dir = os.path.join(self.data_dir, "content_db")
         self.pointer_dir = os.path.join(self.data_dir, "pointer_db")
-        
+
         # Make sure the database directories exist.
         for directory in (self.data_dir, self.content_dir, self.pointer_dir):
             if not os.path.exists(directory):
                 os.mkdir(directory, 0700)
-    
+
     def getdir(self):
         return self.data_dir
-    
+
     @staticmethod
     def sha256(byte_string):
         """
         Return the SHA-256 hash value of the given byte_string in hexadecimal
         representation.
-        
+
         Used for entering content into the content database.
         """
         from hashlib import sha256
@@ -67,7 +67,7 @@ class Gentle(object):
     def random():
         """
         Return a random-generated 256-bit number in hexadecimal representation.
-        
+
         Useful for creating pointers in the pointer database.
         """
         return os.urandom(256 / 8).encode("hex")
@@ -75,7 +75,7 @@ class Gentle(object):
     def full(self, identifier):
         """
         Return the full version of a possibly abbreviated identifier.
-        
+
         The identifier must match the beginning of the key of exactly one entry in
         either one database.
         """
@@ -93,7 +93,7 @@ class Gentle(object):
         """
         Enter content into the content database, or change a pointer in the pointer
         database.
-        
+
         Example:
         >>> gentle.put("content")
         'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73'
@@ -101,7 +101,7 @@ class Gentle(object):
         '80834436d97b9327eb8138c907f57c205b3d7ba9a962d7cf72849993e909c299'
         >>> gentle.put("80834436d97b9327eb8138c907f57c205b3d7ba9a962d7cf72849993e909c299", "ed7002")
         '80834436d97b9327eb8138c907f57c205b3d7ba9a962d7cf72849993e909c299'
-        
+
         In the first usage, return the SHA-256 hash value of the entered content.
         """
         if b is None:  # write new content
@@ -130,13 +130,13 @@ class Gentle(object):
         """
         Get content from the content database, or follow a pointer from the
         pointer database.
-        
+
         Example:
         >>> gentle.get("808344")
         'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73'
         >>> gentle.get("ed7002")
         'content'
-        
+
         The identifier must match the beginning of the key of exactly one entry in
         either one database.
         """
@@ -154,7 +154,7 @@ class Gentle(object):
     def rm(self, *identifiers):
         """
         Remove content from the content database or from the pointer database.
-        
+
         The identifier must match the beginning of the key of exactly one entry in
         either one database.
         """
@@ -188,4 +188,3 @@ def main(argv):
 if __name__ == "__main__":
     import sys
     main(sys.argv)
-
