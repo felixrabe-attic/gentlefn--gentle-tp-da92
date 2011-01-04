@@ -13,8 +13,8 @@ The value is the data content, and the key is the SHA-256 sum of that value.
 The key-value entries in the content database are inherently immutable.
 
 The second dictionary, called the pointer database, stores references to these
-SHA1 keys.  The value is the SHA1 sum, and the key is a generated 128-bit
-random number.  The value is mutable.
+SHA-256 keys.  The value is the SHA-256 sum, and the key is a generated 256-bit
+random number.  The values of pointer database entries are mutable.
 
 There is a third identifier namespace of a smiliar nature.  It actually does
 not store any data, and the only meaningful method that operates on it is the
