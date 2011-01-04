@@ -163,27 +163,32 @@ class Gentle(object):
             filename = os.path.join(directory, identifier)
             os.remove(filename)
 
+    def _cli(self, function_name, *args):
+        """
+        Command line interface.
+        """
+        fn = getattr(self, function_name)
+        if fn in (self.sha256, self.put) and len(args) == 0:
+            byte_string = sys.stdin.read()
+            print fn(byte_string)
+            return
+        elif fn == self.get:
+            directory, identifier = self.full(args[0])
+            if directory == self.content_dir:
+                byte_string = fn(*args)
+                sys.stdout.write(byte_string)
+                return
+        result = fn(*args)
+        if result is not None:
+            print result
+
 
 def main(argv):
     """
     Command line interface.
     """
     gentle = Gentle()
-    function_name, args = argv[1], argv[2:]
-    fn = getattr(gentle, function_name)
-    if fn in (gentle.sha256, gentle.put) and len(args) == 0:
-        byte_string = sys.stdin.read()
-        print fn(byte_string)
-        return
-    elif fn == gentle.get:
-        directory, identifier = gentle.full(args[0])
-        if directory == gentle.content_dir:
-            byte_string = fn(*args)
-            sys.stdout.write(byte_string)
-            return
-    result = fn(*args)
-    if result is not None:
-        print result
+    return gentle._cli(*argv[1:])
 
 if __name__ == "__main__":
     import sys
