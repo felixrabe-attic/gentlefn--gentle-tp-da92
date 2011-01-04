@@ -41,15 +41,16 @@ This tutorial assumes that you know and use Bash.
 
 Change into the directory where those modules can be found:
 
-    gentle_da92de4118f6fa91.py
+    gentle_da92de4118f6fa91.py - Gentle Core Module
         This is the module which implements the very heart of Gentle.  This set
         of features is what distinguishes Gentle from all other systems out
         there.
 
-    gentle_da92de4118f6fa91_next.py
+    gentle_da92de4118f6fa91_next.py - Gentle Next Module
         You can think of this module as some kind of subclass of
-        gentle_da92de4118f6fa91.  It extends gentle_da92de4118f6fa91 with
-        features that are the next step, the next level up
+        gentle_da92de4118f6fa91.  The Next Module extends the Core Module with
+        features that are the next step, or the next level up, from the Core
+        Module.
         
 The modules have a convenient command-line interface if aliased:
 
