@@ -171,19 +171,18 @@ def interface(*interfacedef):
 class GentleNext(Gentle):
 
     @interface(PassThrough, JSONContent)
-    def getjson(self, json_document):
+    def getj(self, json_document):
         """
         Pretty-print a JSON document.
         """
         print json.dumps(json_document, indent=4, sort_keys=True)
 
-
     @interface(JSONContent, PassThrough)
-    def putjson(self, json_document):
+    def putj(self, json_document):
         return json_document
 
-    jsonget = getjson
-    jsonput = putjson
+    jget = getj
+    jput = putj
 
     @staticmethod
     def timestamp(t=None):
