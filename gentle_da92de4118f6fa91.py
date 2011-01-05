@@ -42,7 +42,7 @@ class Gentle(object):
 
         if data_dir is None:
             data_dir = os.environ.get(self.ENVIRON_DATA_DIR_KEY, self.DEFAULT_DATA_DIR)
-        self.data_dir = data_dir
+        self.data_dir = os.path.abspath(data_dir)
         self.content_dir = os.path.join(self.data_dir, "content_db")
         self.pointer_dir = os.path.join(self.data_dir, "pointer_db")
 
