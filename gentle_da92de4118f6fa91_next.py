@@ -161,6 +161,19 @@ class GentleNext(Gentle):
     jget = getj
     jput = putj
 
+    @interface(JSONContent, JSONContent, PassThrough)
+    def json(self, json_document, python_snippet):
+        """
+        Manipulate JSON.
+
+        Example:
+        >>> g.json("abcdef", "d['content:link'] = g.put(g.random(), d['content'])")
+        '012345678901234567890123456789012345678901234567890123456789abcd'
+        """
+        d = json_document
+        exec python_snippet
+        return d
+
     @staticmethod
     def timestamp(t=None):
         if t is None:
