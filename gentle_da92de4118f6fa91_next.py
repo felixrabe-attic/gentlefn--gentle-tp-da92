@@ -156,6 +156,12 @@ class GentleNext(Gentle):
 
     @interface(JSONContent, PassThrough)
     def putj(self, json_document):
+        if isinstance(json_document, basestring):
+            # Automatically try to parse the passed-in JSON:
+            try:
+                json_document = json.loads(json_document)
+            except:
+                pass  # Not severe; we just keep the string as-is
         return json_document
 
     jget = getj
@@ -272,6 +278,11 @@ class GentleNext(Gentle):
         """
         Command line interface.
         """
+        fn = getattr(self, function_name)
+        if fn == self.putj and len(args) == 0:
+            byte_string = sys.stdin.read()
+            print fn(byte_string)
+            return
         return super(GentleNext, self)._cli(function_name, *args)
 
 
