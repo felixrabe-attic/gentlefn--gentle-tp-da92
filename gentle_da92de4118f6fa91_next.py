@@ -178,16 +178,30 @@ class GentleNext(Gentle):
         return format_time_with_offset(t)
 
     @interface(JSONContent, ContentHash, ContentHash)
-    def mkversion(self, prev_version_hashv, new_content_hashv):
+    def mkversion(self, prev_version_hashv, new_content_hashv=None, timestamp=None):
         """
         Create new version metadata.
 
-        The identifiers must name existing content.
+        The identifiers must name existing content.  If only one identifier is
+        specified, the method will create a new version whose previous version
+        is the empty version ({}).
         """
+        if new_content_hashv is None:
+            new_content_hashv = prev_version_hashv
+            prev_version_hashv = self.sha256("{}")
+        new_content_key = "content:content"
+        try:
+            json.loads(self.get(new_content_hashv))
+        except: pass
+        else:
+            new_content_key = "content:json:content"
+
+        if timestamp is None: timestamp = self.timestamp()
+
         new_version = {
-            "content": new_content_hashv,
+            new_content_key: new_content_hashv,
             "prev_version:metadata:content": prev_version_hashv,
-            "timestamp": self.timestamp(),
+            "timestamp": timestamp,
             }
         return new_version
 
