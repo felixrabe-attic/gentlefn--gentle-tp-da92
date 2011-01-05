@@ -144,6 +144,9 @@ def interface(*interfacedef):
 
 class GentleNext(Gentle):
 
+    # These content types denote valid JSON documents:
+    JSON_CONTENT = ("json", "metadata")
+
     @interface(PassThrough, JSONContent)
     def getj(self, json_document):
         """
@@ -210,26 +213,33 @@ class GentleNext(Gentle):
 
         if isinstance(obj, dict):
             for key in obj:
-                p = key.split(":")
-                if p[-1] != "content": continue
                 self.__inner_findall(obj[key], dict_so_far, key)
             return
 
         if isinstance(obj, list):
             for item in obj:
-                self.findall(item, dict_so_far, key)
+                self.__inner_findall(item, dict_so_far, key)
             return
 
         if isinstance(obj, basestring):
             if key is None: return
             p = key.split(":")
-            if p[-1] != "content": return  # ignore non-references
-            content_hash = obj
-            if content_hash in dict_so_far: return  # prevent loop
-            dict_so_far[content_hash] = "content"
-            if len(p) >= 2 and p[-2] == "metadata":
-                dict_so_far[content_hash] = "metadata:content"
-                self.findall(content_hash, dict_so_far)
+            if p[-1] == "pointer":
+                pointer = obj
+                if pointer in dict_so_far: return  # prevent loop
+                dict_so_far[pointer] = "pointer"
+                obj = self.get(pointer)  # dereference pointer
+                p[-1] = "content"
+                key = ":".join(p)
+            if p[-1] == "content":
+                content_hash = obj
+                if content_hash in dict_so_far: return  # prevent loop
+                dict_so_far[content_hash] = "content"
+                if len(p) >= 2 and p[-2] in GentleNext.JSON_CONTENT:
+                    dict_so_far[content_hash] = p[-2] + ":content"
+                    self.findall(content_hash, dict_so_far)
+            else:
+                return  # ignore non-references
             return
 
         return  # not interested in other types
@@ -243,7 +253,7 @@ class GentleNext(Gentle):
         if outer_findall:  # this method also gets called by __inner_findall
             dict_so_far = {}
             if hasattr(metadata, "original_gentle_hash"):
-                dict_so_far[metadata.original_gentle_hash] = "metadata:content"
+                dict_so_far[metadata.original_gentle_hash] = "json:content"
         self.__inner_findall(metadata, dict_so_far)
         if outer_findall:
             lists = collections.defaultdict(list)
