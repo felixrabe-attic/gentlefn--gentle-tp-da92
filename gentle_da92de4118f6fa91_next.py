@@ -164,7 +164,7 @@ class GentleNext(Gentle):
         Manipulate JSON.
 
         Example:
-        >>> g.json("abcdef", "d['content:link'] = g.put(g.random(), d['content'])")
+        >>> g.json("abcdef", "d['content:pointer'] = g.put(g.random(), d['content'])")
         '012345678901234567890123456789012345678901234567890123456789abcd'
         """
         d = json_document
