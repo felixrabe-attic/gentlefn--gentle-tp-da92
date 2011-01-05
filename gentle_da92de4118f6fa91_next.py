@@ -128,9 +128,6 @@ def interface(*interfacedef):
             len_inputdefs = len(inputdefs)
 
             # Convert the arguments
-            if len(caller_args) < len_inputdefs:
-                raise TypeError("%s() takes at least %u arguments (%u given)" %
-                                (fn.__name__, len_inputdefs, len(caller_args)))
             fn_args = []
             for i, caller_arg in enumerate(caller_args):
                 if i < len_inputdefs:
@@ -229,7 +226,7 @@ class GentleNext(Gentle):
         Find all identifiers reachable by some metadata.
         """
         outer_findall = dict_so_far is None
-        if outer_findall:
+        if outer_findall:  # this method also gets called by __inner_findall
             dict_so_far = {}
             if hasattr(metadata, "original_gentle_hash"):
                 dict_so_far[metadata.original_gentle_hash] = "metadata:content"
