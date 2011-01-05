@@ -67,6 +67,8 @@ class Gentle(object):
         sha256_object.update(byte_string)
         return sha256_object.hexdigest()
 
+    sha = sha256
+
     @staticmethod
     def random():
         """
