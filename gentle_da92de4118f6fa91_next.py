@@ -65,29 +65,6 @@ def format_time_with_offset(tt, offset=None):
 ############################################################################
 
 
-def _format_date(t, offset, timezone, date_fmt, show_offset):
-    if timezone == 'utc':
-        tt = time.gmtime(t)
-        offset = 0
-    elif timezone == 'original':
-        if offset is None:
-            offset = 0
-        tt = time.gmtime(t + offset)
-    elif timezone == 'local':
-        tt = time.localtime(t)
-        offset = local_time_offset(t)
-    else:
-        raise errors.UnsupportedTimezoneFormat(timezone)
-    if date_fmt is None:
-        date_fmt = "%a %Y-%m-%d %H:%M:%S"
-    if show_offset:
-        offset_str = ' %+03d%02d' % (offset / 3600, (offset / 60) % 60)
-    else:
-        offset_str = ''
-    return (date_fmt, tt, offset_str)
-
-
-
 class InterfaceDef(object):
 
     def __init__(self, gentle):
