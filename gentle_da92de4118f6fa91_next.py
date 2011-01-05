@@ -168,7 +168,7 @@ def interface(*interfacedef):
     return decorator
 
 
-class GN(Gentle):
+class GentleNext(Gentle):
 
     @interface(PassThrough, JSONContent)
     def getjson(self, json_document):
@@ -257,15 +257,15 @@ class GN(Gentle):
         """
         Command line interface.
         """
-        return super(GN, self)._cli(function_name, *args)
+        return super(GentleNext, self)._cli(function_name, *args)
 
 
 def main(argv):
     """
     Command line interface.
     """
-    gn = GN()
-    return gn._cli(*argv[1:])
+    gentle_next = GentleNext()
+    return gentle_next._cli(*argv[1:])
 
 
 if __name__ == "__main__":
