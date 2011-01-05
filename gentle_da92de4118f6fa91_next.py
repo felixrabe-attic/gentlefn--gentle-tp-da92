@@ -191,7 +191,6 @@ class GN(Gentle):
             t = time.time()
         return format_time_with_offset(t)
 
-
     @interface(JSONContent, ContentHash, ContentHash)
     def mkversion(self, prev_version_hashv, new_content_hashv):
         """
@@ -253,7 +252,6 @@ class GN(Gentle):
             for value in lists.itervalues():
                 value.sort()
             return lists
-
 
     def _cli(self, function_name, *args):
         """
