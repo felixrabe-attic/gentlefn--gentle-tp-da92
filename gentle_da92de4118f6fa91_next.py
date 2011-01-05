@@ -252,6 +252,11 @@ class GentleNext(Gentle):
                 value.sort()
             return lists
 
+    def help(self):
+        import gentle_da92de4118f6fa91_next
+        print "TODO: Provide help text.  In the meantime, find the source code here:"
+        print gentle_da92de4118f6fa91_next.__file__
+
     def _cli(self, function_name, *args):
         """
         Command line interface.
