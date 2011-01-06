@@ -132,6 +132,8 @@ class Gentle(object):
             #   Bash:   g put $(g random) $(g put < content) > content.ptr
             return pointer_key
 
+    __setitem__ = put
+
     def get(self, identifier):
         """
         Get content from the content database, or follow a pointer from the
@@ -156,6 +158,8 @@ class Gentle(object):
         else:
             hash_value = open(filename, "rb").read()
             return hash_value
+
+    __getitem__ = get
 
     def rm(self, *identifiers):
         """
