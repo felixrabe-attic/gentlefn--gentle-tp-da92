@@ -215,8 +215,6 @@ class GentleNext(Gentle):
         return new_version
 
     def __inner_findall(self, obj, dict_so_far, key=None):
-        # import pdb; pdb.set_trace()
-
         if isinstance(obj, dict):
             for key in obj:
                 self.__inner_findall(obj[key], dict_so_far, key)
