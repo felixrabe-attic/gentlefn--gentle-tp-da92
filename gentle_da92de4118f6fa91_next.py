@@ -220,6 +220,15 @@ class GentleNext(Gentle):
             }
         return new_version
 
+    def putv(self, pointer_identifier, content_identifier=None):
+        pointer_identifier = self.full(pointer_identifier)[1]
+        if not isinstance(content_identifier, basestring):  # a json object
+            content_identifier = self.putj(content_identifier)
+        else:
+            content_identifier = self.full(content_identifier)[1]
+        new_version = self.mkversion(self.get(pointer_identifier), content_identifier)
+        return self.put(pointer_identifier, new_version)
+
     def __inner_findall(self, obj, dict_so_far, key=None):
         if isinstance(obj, dict):
             for key in obj:
