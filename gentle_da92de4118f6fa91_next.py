@@ -263,7 +263,7 @@ class GentleNext(Gentle):
 
         return  # not interested in other types
 
-    @interface(JSONContent, JSONContent)
+    @interface(PassThrough, JSONContent)
     def findall(self, metadata, dict_so_far=None):
         """
         Find all identifiers reachable by some metadata.
@@ -280,6 +280,8 @@ class GentleNext(Gentle):
                 lists[value].append(key)
             for value in lists.itervalues():
                 value.sort()
+            jsondef = JSONContent(self)
+            lists = jsondef.fn_to_caller(lists)
             return lists
 
     def extract(self, identifier, other_data_dir):
