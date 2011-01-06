@@ -171,7 +171,7 @@ class GentleNext(Gentle):
     jget = getj
     jput = putj
 
-    @interface(JSONContent, JSONContent, PassThrough)
+    @interface(PassThrough, JSONContent, PassThrough)
     def json(self, json_document, python_snippet):
         """
         Manipulate JSON.
@@ -181,9 +181,10 @@ class GentleNext(Gentle):
         '012345678901234567890123456789012345678901234567890123456789abcd'
         """
         d = json_document
+        g = self
         empty = self.empty
         exec python_snippet
-        return d
+        return None
 
     @staticmethod
     def timestamp(t=None):
