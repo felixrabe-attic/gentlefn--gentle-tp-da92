@@ -267,6 +267,33 @@ class GentleNext(Gentle):
                 value.sort()
             return lists
 
+    def extract(self, identifier, other_data_dir):
+        """
+        Extract the reachable data, and copy it to a new location.  This can be
+        used to split data.
+        """
+        directory, identifier = self.full(identifier)
+        other_gentle = GentleNext(other_data_dir)
+        pointers = []
+        contents = []
+        if directory == self.pointer_dir:
+            identifier = self.get(identifier)
+        all_content = json.loads(self.get(self.findall(identifier)))
+        for key in all_content:
+            sublist = all_content[key]
+            key = key.split(":")
+            if key[-1] == "pointer":
+                lst = pointers
+            elif key[-1] == "content":
+                lst = contents
+            else:
+                raise Exception, "findall() returned invalid data"
+            lst.extend(sublist)
+        for c in contents:
+            other_gentle.put(self.get(c))
+        for p in pointers:
+            other_gentle.put(p, self.get(p))
+
     def help(self):
         import gentle_da92de4118f6fa91_next
         print "TODO: Provide help text.  In the meantime, find the source code here:"
