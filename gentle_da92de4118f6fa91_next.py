@@ -82,10 +82,26 @@ class PassThrough(InterfaceDef):
     pass
 
 
-class ContentHash(InterfaceDef):
+class OtherGentle(InterfaceDef):
+
+    def caller_to_fn(self, other_data_dir):
+        other_gentle = GentleNext(other_data_dir)
+        return other_gentle
+
+
+class Identifier(InterfaceDef):
 
     def caller_to_fn(self, identifier):
-        directory, hash_value = self.gentle.full(identifier)
+        directory, full_identifier = self.gentle.full(identifier)
+        return (directory, full_identifier)
+
+    fn_to_caller = caller_to_fn
+
+
+class ContentHash(Identifier):
+
+    def caller_to_fn(self, identifier):
+        directory, hash_value = super(ContentHash, self).caller_to_fn(identifier)
         if directory != self.gentle.content_dir:
             raise TypeError("argument must be a content identifier")
         return hash_value
@@ -284,18 +300,15 @@ class GentleNext(Gentle):
             lists = jsondef.fn_to_caller(lists)
             return lists
 
-    def extract(self, identifier, other_data_dir):
-        """
-        Extract the reachable data, and copy it to a new location.  This can be
-        used to split data.
-        """
-        directory, identifier = self.full(identifier)
-        other_gentle = GentleNext(other_data_dir)
-        pointers = []
-        contents = []
-        if directory == self.pointer_dir:
-            identifier = self.get(identifier)
-        all_content = json.loads(self.get(self.findall(identifier)))
+    @staticmethod
+    def __copy(from_gentle, (from_directory, from_identifier), to_gentle):
+        pointers, contents = [], [from_identifier]
+        if from_directory == from_gentle.pointer_dir:
+            from_identifier = from_gentle.get(from_identifier)
+            pointers, contents = contents, []  # findall() will add from_identifier to contents
+        findall_content = from_gentle.findall(from_identifier)
+        all_content = json.loads(from_gentle.get(findall_content))
+        from_gentle.rm(findall_content)
         for key in all_content:
             sublist = all_content[key]
             key = key.split(":")
@@ -307,9 +320,31 @@ class GentleNext(Gentle):
                 raise Exception, "findall() returned invalid data"
             lst.extend(sublist)
         for c in contents:
-            other_gentle.put(self.get(c))
+            to_gentle.put(from_gentle.get(c))
         for p in pointers:
-            other_gentle.put(p, self.get(p))
+            to_gentle.put(p, from_gentle.get(p))
+
+    @interface(PassThrough, Identifier, OtherGentle)
+    def export(self, (directory, identifier), other_gentle):
+        """
+        Extract the data reachable from the identifier in our databases, and
+        copy it to another Gentle data directory.  This can be used to split or
+        export data.
+        """
+        return self.__copy(self, (directory, identifier), other_gentle)
+
+    extract = export
+
+    @interface(PassThrough, PassThrough, OtherGentle)
+    def import_(self, identifier, other_gentle):
+        """
+        Extract the data reachable from the identifier in the other Gentle's
+        databases, and copy it into our Gentle data directory.  This can be used
+        to merge or import data.
+        """
+        identifier_def = Identifier(other_gentle)
+        (directory, identifier) = identifier_def.caller_to_fn(identifier)
+        return self.__copy(other_gentle, (directory, identifier), self)
 
     def help(self):
         import gentle_da92de4118f6fa91_next
