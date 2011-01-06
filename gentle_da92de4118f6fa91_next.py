@@ -147,6 +147,10 @@ class GentleNext(Gentle):
     # These content types denote valid JSON documents:
     JSON_CONTENT = ("json", "metadata")
 
+    def __init__(self, *a, **k):
+        super(GentleNext, self).__init__(*a, **k)
+        self.empty = self.put("{}")
+
     @interface(PassThrough, JSONContent)
     def getj(self, json_document):
         """
@@ -177,6 +181,7 @@ class GentleNext(Gentle):
         '012345678901234567890123456789012345678901234567890123456789abcd'
         """
         d = json_document
+        empty = self.empty
         exec python_snippet
         return d
 
@@ -197,7 +202,7 @@ class GentleNext(Gentle):
         """
         if new_content_hashv is None:
             new_content_hashv = prev_version_hashv
-            prev_version_hashv = self.sha256("{}")
+            prev_version_hashv = self.empty
         new_content_key = "content:content"
         try:
             json.loads(self.get(new_content_hashv))
