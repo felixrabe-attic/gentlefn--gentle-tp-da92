@@ -318,7 +318,7 @@ class GentleNext(Gentle):
         """
         Command line interface.
         """
-        fn = getattr(self, function_name)
+        fn = self._cli_get_fn(function_name)
         if fn == self.putj and len(args) == 0:
             byte_string = sys.stdin.read()
             print fn(byte_string)

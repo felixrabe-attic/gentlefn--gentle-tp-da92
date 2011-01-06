@@ -173,12 +173,20 @@ class Gentle(object):
             filename = os.path.join(directory, identifier)
             os.remove(filename)
 
+    def _cli_get_fn(self, function_name):
+        try:
+            fn = getattr(self, function_name)
+        except:
+            # e.g. function_name == "import" -> def import_(...): ...
+            fn = getattr(self, function_name + "_")
+        return fn
+
     def _cli(self, function_name, *args):
         """
         Command line interface.
         """
         import sys
-        fn = getattr(self, function_name)
+        fn = self._cli_get_fn(function_name)
         if fn in (self.sha256, self.put) and len(args) == 0:
             byte_string = sys.stdin.read()
             print fn(byte_string)
