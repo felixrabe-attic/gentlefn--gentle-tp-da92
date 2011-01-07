@@ -357,7 +357,7 @@ class GentleNext(Gentle):
         Command line interface.
         """
         m, f = self._cli_get_method(method_name)
-        if f == self.putj.__func__ and len(args) == 0:
+        if f == GentleNext.putj.__func__ and len(args) == 0:
             byte_string = sys.stdin.read()
             print fn(byte_string)
             return
