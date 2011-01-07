@@ -173,35 +173,35 @@ class Gentle(object):
             filename = os.path.join(directory, identifier)
             os.remove(filename)
 
-    def _cli_get_fn(self, function_name):
+    def _cli_get_method(self, method_name):
         try:
-            fn = getattr(self, function_name)
+            m = getattr(self, method_name)
         except:
             # e.g. function_name == "import" -> def import_(...): ...
-            fn = getattr(self, function_name + "_")
-        return fn
+            m = getattr(self, method_name + "_")
+        return m, getattr(m, "__func__", m)
 
-    def _cli(self, function_name, *args):
+    def _cli(self, method_name, *args):
         """
         Command line interface.
         """
         import sys
-        fn = self._cli_get_fn(function_name)
-        if fn in (self.sha256, self.put) and len(args) == 0:
+        m, f = self._cli_get_method(method_name)
+        if f in (Gentle.sha256, Gentle.put.__func__) and len(args) == 0:
             byte_string = sys.stdin.read()
             print fn(byte_string)
             return
-        elif fn == self.get:
+        elif f == Gentle.get.__func__:
             directory, identifier = self.full(args[0])
             if directory == self.content_dir:
-                byte_string = fn(*args)
+                byte_string = m(*args)
                 sys.stdout.write(byte_string)
                 return
-        elif fn == self.full:
+        elif f == self.full:
             # On the command line, I simply want to expand an abbreviation:
-            print fn(*args)[1]
+            print m(*args)[1]
             return
-        result = fn(*args)
+        result = m(*args)
         if result is not None:
             print result
 

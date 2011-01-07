@@ -351,16 +351,16 @@ class GentleNext(Gentle):
         print "TODO: Provide help text.  In the meantime, find the source code here:"
         print gentle_da92de4118f6fa91_next.__file__
 
-    def _cli(self, function_name, *args):
+    def _cli(self, method_name, *args):
         """
         Command line interface.
         """
-        fn = self._cli_get_fn(function_name)
-        if fn == self.putj and len(args) == 0:
+        m, f = self._cli_get_method(method_name)
+        if f == self.putj.__func__ and len(args) == 0:
             byte_string = sys.stdin.read()
             print fn(byte_string)
             return
-        return super(GentleNext, self)._cli(function_name, *args)
+        return super(GentleNext, self)._cli(method_name, *args)
 
 
 def main(argv):
