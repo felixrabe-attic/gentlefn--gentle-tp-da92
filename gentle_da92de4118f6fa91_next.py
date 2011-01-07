@@ -198,9 +198,6 @@ class GentleNext(Gentle):
                 pass  # Not severe; we just keep the string as-is
         return json_document
 
-    jget = getj
-    jput = putj
-
     @interface(PassThrough, JSONContent, PassThrough)
     def json(self, json_document, python_snippet):
         """
@@ -346,8 +343,6 @@ class GentleNext(Gentle):
         export data.
         """
         return self.__copy(self, (directory, identifier), other_gentle)
-
-    extract = export
 
     @interface(PassThrough, PassThrough, OtherGentle)
     def import_(self, identifier, other_gentle):
