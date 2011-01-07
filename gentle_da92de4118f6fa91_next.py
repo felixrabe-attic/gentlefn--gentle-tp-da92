@@ -162,6 +162,7 @@ class GentleNext(Gentle):
 
     # These content types denote valid JSON documents:
     JSON_CONTENT = ("json", "metadata")
+    PREV_VERSION_KEY = "prev_version:metadata:content"
 
     def __init__(self, *a, **k):
         super(GentleNext, self).__init__(*a, **k)
@@ -231,7 +232,7 @@ class GentleNext(Gentle):
 
         new_version = {
             new_content_key: new_content_hashv,
-            "prev_version:metadata:content": prev_version_hashv,
+            self.PREV_VERSION_KEY: prev_version_hashv,
             "timestamp": timestamp,
             }
         return new_version
