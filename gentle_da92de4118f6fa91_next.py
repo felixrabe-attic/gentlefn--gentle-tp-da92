@@ -179,7 +179,7 @@ class GentleNext(Gentle):
 
     def __init__(self, *a, **k):
         super(GentleNext, self).__init__(*a, **k)
-        self.empty = self.put("{}")
+        self.empty_version = self.put("{}")
 
     @interface(PassThrough, JSONContent)
     def getj(self, json_document):
@@ -209,7 +209,6 @@ class GentleNext(Gentle):
         """
         c = json_document
         g = self
-        empty = self.empty
         exec python_snippet
         return None
 
@@ -226,11 +225,11 @@ class GentleNext(Gentle):
 
         The identifiers must name existing content.  If only one identifier is
         specified, the method will create a new version whose previous version
-        is the empty version ({}).
+        is the empty_version version ({}).
         """
         if new_content_hashv is None:
             new_content_hashv = prev_version_hashv
-            prev_version_hashv = self.empty
+            prev_version_hashv = self.empty_version
         new_content_key = "content:content"
         try:
             json.loads(self.get(new_content_hashv))
