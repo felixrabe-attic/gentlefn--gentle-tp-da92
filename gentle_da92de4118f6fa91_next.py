@@ -56,10 +56,14 @@ def get_localtime_with_offset(t):
     offset = local_time_offset(t)
     return (tt, offset)
 
-def format_time_with_offset(tt, offset=None):
-    if offset is None:
-        tt, offset = get_localtime_with_offset(tt)
-    offset_str = " %+03d%02d" % (offset / 3600, (offset / 60) % 60)
+def format_time_with_offset(t, offset_arg=None):
+    tt, offset = get_localtime_with_offset(t)
+    if offset_arg is not None:
+        offset = offset_arg
+    # # TODO: this is wrong - file a bug for bzr:
+    # offset_str = " %+03d%02d" % (offset / 3600, (offset / 60) % 60)
+    offset_sign = "-" if offset < 0 else "+"
+    offset_str = " %s%02d%02d" % (offset_sign, abs(offset) / 3600, (abs(offset) / 60) % 60)
     return time.strftime("%Y-%m-%d %H:%M:%S", tt) + offset_str
 
 ############################################################################
