@@ -189,7 +189,7 @@ class Gentle(object):
         m, f = self._cli_get_method(method_name)
         if f in (Gentle.sha256, Gentle.put.__func__) and len(args) == 0:
             byte_string = sys.stdin.read()
-            print fn(byte_string)
+            print m(byte_string)
             return
         elif f == Gentle.get.__func__:
             directory, identifier = self.full(args[0])
