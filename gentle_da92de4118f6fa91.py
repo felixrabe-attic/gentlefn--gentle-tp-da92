@@ -28,6 +28,7 @@ computer programming and user interfaces.
 
 import glob
 import os
+import sys
 
 
 class Gentle(object):
@@ -185,7 +186,6 @@ class Gentle(object):
         """
         Command line interface.
         """
-        import sys
         m, f = self._cli_get_method(method_name)
         if f in (Gentle.sha256, Gentle.put.__func__) and len(args) == 0:
             byte_string = sys.stdin.read()
@@ -214,5 +214,4 @@ def main(argv):
     return gentle._cli(*argv[1:])
 
 if __name__ == "__main__":
-    import sys
     main(sys.argv)
