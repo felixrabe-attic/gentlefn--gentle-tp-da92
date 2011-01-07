@@ -35,7 +35,7 @@ from datetime import datetime
 import json
 import time
 
-from gentle_da92de4118f6fa91 import Gentle
+from gentle_da92de4118f6fa91 import *
 
 ############################################################################
 
