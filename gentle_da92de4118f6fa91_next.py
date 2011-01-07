@@ -374,6 +374,9 @@ class GentleNext(Gentle):
             byte_string = sys.stdin.read()
             print fn(byte_string)
             return
+        if f == GentleNext.json.__func__ and len(args) == 1:
+            python_snippet = sys.stdin.read()
+            args = args + (python_snippet,)
         return super(GentleNext, self)._cli(method_name, *args)
 
 
