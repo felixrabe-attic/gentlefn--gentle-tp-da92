@@ -68,6 +68,15 @@ def format_time_with_offset(t, offset_arg=None):
 
 ############################################################################
 
+def parse_time_with_offset(timestamp):
+    assert len(timestamp) == 25
+    offset_str = timestamp[-6:]
+    offset_sign = offset_str[1]
+    offset = (int(offset_str[2:4]) * 60 + int(offset_str[4:6])) * 60
+    if offset_sign == "-": offset *= -1
+    tt = time.strptime(timestamp[:-6], "%Y-%m-%d %H:%M:%S")
+    return (time.mktime(tt), offset)
+
 
 class InterfaceDef(object):
 
