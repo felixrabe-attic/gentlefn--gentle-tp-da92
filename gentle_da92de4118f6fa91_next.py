@@ -179,7 +179,8 @@ class GentleNext(Gentle):
 
     def __init__(self, *a, **k):
         super(GentleNext, self).__init__(*a, **k)
-        self.empty_version = self.put("{}")
+        self.empty_content = self.put("")
+        self.empty_version = self.putj({"content:content": self.empty_content})
 
     @interface(PassThrough, JSONContent)
     def getj(self, json_document):
