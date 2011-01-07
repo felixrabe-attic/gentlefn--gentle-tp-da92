@@ -197,7 +197,7 @@ class Gentle(object):
                 byte_string = m(*args)
                 sys.stdout.write(byte_string)
                 return
-        elif f == self.full:
+        elif f == self.full.__func__:
             # On the command line, I simply want to expand an abbreviation:
             print m(*args)[1]
             return
