@@ -173,6 +173,17 @@ class Gentle(object):
             directory, identifier = self.full(identifier)
             filename = os.path.join(directory, identifier)
             os.remove(filename)
+    
+    def type_(self, identifier):
+        try:
+            directory, identifier = self.full(identifier)
+            if directory == self.content_dir:
+                return "content"
+            elif directory == self.pointer_dir:
+                return "pointer"
+        except:
+            pass
+        return None
 
     def _cli_get_method(self, method_name):
         try:
