@@ -174,8 +174,15 @@ def interface(*interfacedef):
 
 class GentleNext(Gentle):
 
+    # In JSON data, keys ending in one of ":<REFERENCE_KEY>" have identifier
+    # string values:
+    REFERENCE_KEYS = ("pointer", "content")
+
     # These content types denote valid JSON documents:
-    JSON_CONTENT = ("json", "metadata")
+    JSON_CONTENT_KEYS = ("json:content".split(":"), "metadata:content".split(":"))
+
+    # This key is found in version control JSON documents (other than in the
+    # empty version document):
     PREV_VERSION_KEY = "prev_version:metadata:content"
 
     def __init__(self, *a, **k):
@@ -253,80 +260,95 @@ class GentleNext(Gentle):
         new_version = self.mkversion(self.get(pointer_identifier), content_identifier)
         return self.put(pointer_identifier, new_version)
 
-    def __inner_findall(self, obj, dict_so_far, key=None):
+    def __findall_in_object(self, obj, found_by_key, key=None):
         if isinstance(obj, dict):
             for key in obj:
-                self.__inner_findall(obj[key], dict_so_far, key)
-            return
+                self.__findall_in_object(obj[key], found_by_key, key.split(":"))
 
-        if isinstance(obj, list):
+        elif isinstance(obj, list):
             for item in obj:
-                self.__inner_findall(item, dict_so_far, key)
-            return
+                self.__findall_in_object(item, found_by_key, key)
 
-        if isinstance(obj, basestring):
-            if key is None: return
-            p = key.split(":")
-            if p[-1] == "pointer":
-                pointer = obj
-                if pointer in dict_so_far: return  # prevent loop
-                dict_so_far[pointer] = "pointer"
-                obj = self.get(pointer)  # dereference pointer
-                p[-1] = "content"
-                key = ":".join(p)
-            if p[-1] == "content":
-                content_hash = obj
-                if content_hash in dict_so_far: return  # prevent loop
-                dict_so_far[content_hash] = "content"
-                if len(p) >= 2 and p[-2] in GentleNext.JSON_CONTENT:
-                    dict_so_far[content_hash] = p[-2] + ":content"
-                    self.findall(content_hash, dict_so_far)
-            else:
+        elif isinstance(obj, basestring):
+            if key is None or key[-1] not in GentleNext.REFERENCE_KEYS:
                 return  # ignore non-references
-            return
+            self.__findall_in_content(obj, found_by_key, key)
 
-        return  # not interested in other types
+        # else - not interested in other types, just return
 
-    @interface(PassThrough, JSONContent)
-    def findall(self, metadata, dict_so_far=None):
+    def __findall_in_content(self, identifier, found_by_key, key=None,
+                             identifier_must_be_valid=True):
+        if identifier_must_be_valid:
+            if len(identifier) != 256 / 4:
+                raise ValueError("invalid identifier: %r" % identifier)
+        directory, identifier = self.full(identifier)
+        if directory == self.pointer_dir:
+            if key is None:
+                key = ["json", "pointer"]
+            if key[-1] != "pointer":
+                raise ValueError("identifier of wrong type: %r" % identifier)
+            if identifier in found_by_key["pointer"]: return  # prevent loop
+            found_by_key["pointer"].append(identifier)
+            identifier = self.get(identifier)  # dereference pointer
+            key = key[:]
+            key[-1] = "content"  # turn "*:pointer" key into "*:content" key
+        if key is None:
+            key = ["json", "content"]
+        if key[-1] != "content":
+            raise ValueError("identifier of wrong type: %r" % identifier)
+        if (identifier in found_by_key["content"] or
+            identifier in found_by_key["json:content"]):
+            return  # prevent loop
+        if key[-2:] in GentleNext.JSON_CONTENT_KEYS:
+            found_by_key["json:content"].append(identifier)
+            obj = json.loads(self.get(identifier))
+            self.__findall_in_object(obj, found_by_key)
+        else:
+            found_by_key["content"].append(identifier)
+
+    def findall(self, *identifiers):
         """
-        Find all identifiers reachable by some metadata.
+        Find all identifiers reachable by some identifier, including the given
+        identifier.
         """
-        outer_findall = dict_so_far is None
-        if outer_findall:  # this method also gets called by __inner_findall
-            dict_so_far = {}
-            if hasattr(metadata, "original_gentle_hash"):
-                dict_so_far[metadata.original_gentle_hash] = "json:content"
-        self.__inner_findall(metadata, dict_so_far)
-        if outer_findall:
-            lists = collections.defaultdict(list)
-            for key, value in dict_so_far.iteritems():
-                lists[value].append(key)
-            for value in lists.itervalues():
-                value.sort()
-            jsondef = JSONContent(self)
-            lists = jsondef.fn_to_caller(lists)
-            return lists
+        found_by_key = collections.defaultdict(list)
+        if len(identifiers) == 0:  # find really *everything*
+            for identifier in os.listdir(self.pointer_dir):
+                found_by_key["pointer"].append(identifier)
+            for identifier in os.listdir(self.content_dir):
+                key = "content"
+                content = self.get(identifier)
+                try:
+                    json_content = json.loads(content)
+                except:
+                    pass
+                else:
+                    key = "json:content"
+                found_by_key[key].append(identifier)
+        else:
+            for identifier in identifiers:
+                self.__findall_in_content(identifier, found_by_key,
+                                          identifier_must_be_valid=False)
+        for found_list in found_by_key.itervalues():
+            found_list.sort()
+        jsondef = JSONContent(self)
+        identifier = jsondef.fn_to_caller(found_by_key)
+        return identifier
 
     @staticmethod
     def __copy(from_gentle, (from_directory, from_identifier), to_gentle):
-        pointers, contents = [], [from_identifier]
-        if from_directory == from_gentle.pointer_dir:
-            from_identifier = from_gentle.get(from_identifier)
-            pointers, contents = contents, []  # findall() will add from_identifier to contents
-        findall_content = from_gentle.findall(from_identifier)
-        all_content = json.loads(from_gentle.get(findall_content))
-        from_gentle.rm(findall_content)
-        for key in all_content:
-            sublist = all_content[key]
+        identifier = from_gentle.findall(from_identifier)
+        found_by_key = json.loads(from_gentle.get(identifier))
+        # from_gentle.rm(identifier)
+        pointers, contents = [], []
+        for key, sublist in found_by_key.iteritems():
             key = key.split(":")
             if key[-1] == "pointer":
-                lst = pointers
+                pointers.extend(sublist)
             elif key[-1] == "content":
-                lst = contents
+                contents.extend(sublist)
             else:
-                raise Exception, "findall() returned invalid data"
-            lst.extend(sublist)
+                raise Exception, "FATAL: findall() returned invalid data"
         for c in contents:
             to_gentle.put(from_gentle.get(c))
         for p in pointers:
