@@ -80,7 +80,7 @@ Change into the directory where those modules can be found:
         gentle_da92de4118f6fa91.  The Next Module extends the Core Module with
         features that are the next step, or the next level up, from the Core
         Module.
-        
+
 The modules have a convenient command-line interface if aliased:
 
     $ alias g='python -m gentle_da92de4118f6fa91_next'
@@ -120,7 +120,7 @@ content database:
 Content is identified by its SHA-256 hash value.  You will get the same result
 if using sha256sum, and Gentle also makes the sha256 function public:
 
-    $ echo "Hello World" | sha256sum 
+    $ echo "Hello World" | sha256sum
     d2a84f4b8b650937ec8f73cd8be2c74add5a911ba64df27458ed8229da804a26  -
     $ echo "Hello World" | g sha256
     d2a84f4b8b650937ec8f73cd8be2c74add5a911ba64df27458ed8229da804a26
