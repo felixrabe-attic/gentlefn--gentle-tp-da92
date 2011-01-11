@@ -27,6 +27,14 @@ in exactly this way.  This identifier is unique and long-lasting, more so than
 a project name or URL.
 
 
+Scope of this technology preview
+--------------------------------
+
+This technology preview uses simple filesystem-based data structures for storing
+data.  As soon as this backend proves insufficient, a new Gentle project (be it
+a technology preview or something else) will be started.
+
+
 Copyright statement
 -------------------
 
