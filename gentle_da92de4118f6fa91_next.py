@@ -204,10 +204,6 @@ class GentleNext(Gentle):
     def json(self, json_document, python_snippet):
         """
         Manipulate JSON.
-
-        Example:
-        >>> g.json("abcdef", "c['content:pointer'] = g.put(g.random(), c['content'])")
-        '012345678901234567890123456789012345678901234567890123456789abcd'
         """
         c = json_document
         g = self
