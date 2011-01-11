@@ -173,7 +173,7 @@ class Gentle(object):
             directory, identifier = self.full(identifier)
             filename = os.path.join(directory, identifier)
             os.remove(filename)
-    
+
     def type_(self, identifier):
         try:
             directory, identifier = self.full(identifier)
