@@ -368,7 +368,7 @@ class GentleNext(Gentle):
         m, f = self._cli_get_method(method_name)
         if f == GentleNext.putj.__func__ and len(args) == 0:
             byte_string = sys.stdin.read()
-            print fn(byte_string)
+            print m(byte_string)
             return
         if f == GentleNext.json.__func__ and len(args) == 1:
             python_snippet = sys.stdin.read()
