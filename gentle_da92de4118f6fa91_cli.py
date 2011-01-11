@@ -109,7 +109,13 @@ class GentleCLI(object):
 
         # interpret to_number:
         if to_number is None:
-            print g.put(read())
+            content = read()
+            try:
+                content_json = json.loads(content)
+            except:
+                print g.put(content)
+            else:
+                print g.putj(content_json)
             return
 
         # interpret the latter arguments:
@@ -135,7 +141,7 @@ class GentleCLI(object):
             to_pointer_exists = False
             from string import hexdigits as hexd
             if len(to_number) != len(g.empty_version) or any(c not in hexd for c in to_number):
-                raise TypeError("invalid pointer: '%s'" % to_number)
+                raise ValueError("invalid pointer: %r" % to_number)
             to_pointer = to_number
         else:
             to_pointer_exists = True
