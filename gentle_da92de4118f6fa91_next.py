@@ -69,7 +69,8 @@ def format_time_with_offset(t, offset_arg=None):
 ############################################################################
 
 def parse_time_with_offset(timestamp):
-    assert len(timestamp) == 25
+    if len(timestamp) != 25:
+        raise ValueError("timestamp has wrong format: '%s'" % timestamp)
     offset_str = timestamp[-6:]
     offset_sign = offset_str[1]
     offset = (int(offset_str[2:4]) * 60 + int(offset_str[4:6])) * 60
