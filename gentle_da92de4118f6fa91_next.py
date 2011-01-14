@@ -308,8 +308,8 @@ class GentleNext(Gentle):
 
     def findall(self, *identifiers):
         """
-        Find all identifiers reachable by some identifier, including the given
-        identifier.
+        Find all identifiers reachable by some identifiers, including the given
+        identifiers.  Or, find all identifiers.
         """
         found_by_key = collections.defaultdict(list)
         if len(identifiers) == 0:  # find really *everything*
