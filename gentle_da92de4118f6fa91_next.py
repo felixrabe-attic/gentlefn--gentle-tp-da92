@@ -306,7 +306,7 @@ class GentleNext(Gentle):
         else:
             found_by_key["content"].append(identifier)
 
-    def findall(self, *identifiers):
+    def _findall(self, *identifiers):
         """
         Find all identifiers reachable by some identifiers, including the given
         identifiers.  Or, find all identifiers.
@@ -331,14 +331,21 @@ class GentleNext(Gentle):
                                           identifier_must_be_valid=False)
         for found_list in found_by_key.itervalues():
             found_list.sort()
+        return found_by_key
+
+    def findall(self, *identifiers):
+        """
+        Find all identifiers reachable by some identifiers, including the given
+        identifiers.  Or, find all identifiers.
+        """
+        found_by_key = self._findall(*identifiers)
         jsondef = JSONContent(self)
         identifier = jsondef.fn_to_caller(found_by_key)
         return identifier
 
     @staticmethod
     def __copy(from_gentle, (from_directory, from_identifier), to_gentle):
-        identifier = from_gentle.findall(from_identifier)
-        found_by_key = json.loads(from_gentle.get(identifier))
+        found_by_key = from_gentle._findall(from_identifier)
         # from_gentle.rm(identifier)
         pointers, contents = [], []
         for key, sublist in found_by_key.iteritems():
