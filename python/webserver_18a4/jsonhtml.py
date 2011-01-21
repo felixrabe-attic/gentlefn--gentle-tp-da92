@@ -19,10 +19,11 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import email.utils
 import json
-from json.encoder import encode_basestring_ascii
+from   json.encoder import encode_basestring_ascii
 import os
-from xml.sax.saxutils import escape as xml_escape
+from   xml.sax.saxutils import escape as xml_escape
 
 from gentle_da92de4118f6fa91_next import GentleNext
 
@@ -152,6 +153,9 @@ class HTMLJSONEncoder(json.JSONEncoder):
                     html_url = "/%s/%s" % (current_gentle_key[-1], o)
                 elif current_gentle_key[-1] == "url":
                     html_url = o
+                elif current_gentle_key[-1] == "email":
+                    realname, address = email.utils.parseaddr(o)
+                    html_url = "mailto:" + address
                 if html_url is not None:
                     html_url = xml_escape(html_url)
                     yield HTMLChunk('<a href="%s">' % html_url)
@@ -207,7 +211,7 @@ class HTMLJSONEncoder(json.JSONEncoder):
             markers = {}
         else:
             markers = None
-        yield "<pre>"
+        yield '<pre style="clear: both; margin-top: 6px; margin-bottom: 6px;">'
         for i in self._iterencode(o, markers):
             if isinstance(i, HTMLChunk):
                 yield i.string_value
