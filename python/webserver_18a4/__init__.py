@@ -32,6 +32,8 @@ from webserver_18a4.jsonhtml import *
 __gentle_da92_identifier__ = \
     "18a44d6590c1bb018a4bdacf31ea80ce090d12e1db4c6bc2c21e52cea5cd72ec"
 
+PNG_SIGNATURE = "89504e470d0a1a0a".decode("hex")
+
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -41,7 +43,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
         BaseHTTPRequestHandler.setup(self)
         self.gentle = self.server.gentle
 
-    def do_GET(self):
+    def do_GET(self):  # TODO: this is all too complex and should be refactored into smaller steps
         if self.client_address[0] != "127.0.0.1":
             return  # do not serve
         path = self.path[1:].split("/")
@@ -73,6 +75,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             except:
                 self.send_error(404, "Item not found or invalid number: %r" % identifier)
                 return
+            header = []
             if type == "pointer":
                 if False:
                     self.send_response(302)
@@ -81,15 +84,29 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                     self.end_headers()
                     return
                 # Just serve the respective content:
+                header.append('<div style="font-style: italic; color: #999; font-size: smaller;">')
+                header.append('<div style="float: right;">%s</div>' % self.gentle.getdir())
+                header.append('<a href="/">Home</a> ; Pointer to ')
+                header.append('<a href="/content/%(c)s">content</a>: %(c)s</div>' % dict(c=content))
                 content = self.gentle.get(content)
             self.send_response(200)
+            header = "".join(header)
             try:
                 json_content = json.loads(content)
             except:
-                self.send_header("Content-type", "text/plain")
+                if type == "pointer":
+                    self.send_header("Content-type", "text/html")
+                    content = header
+                    content += "<p><i>To see the non-JSON content, click 'content' above.</i></p>"
+                else:
+                    if content[:8] == PNG_SIGNATURE:
+                        self.send_header("Content-type", "image/png")
+                    else:
+                        self.send_header("Content-type", "text/plain")
             else:
                 self.send_header("Content-type", "text/html")
-                content = json.dumps(json_content, indent=4, sort_keys=True, cls=HTMLJSONEncoder)
+                content = header
+                content += json.dumps(json_content, indent=4, sort_keys=True, cls=HTMLJSONEncoder)
             self.end_headers()
             self.wfile.write(content)
 
