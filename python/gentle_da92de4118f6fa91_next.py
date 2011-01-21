@@ -368,7 +368,7 @@ class GentleNext(Gentle):
         copy it to another Gentle data directory.  This can be used to split or
         export data.
         """
-        return self.__copy(self, (directory, identifier), other_gentle)
+        return GentleNext.__copy(self, (directory, identifier), other_gentle)
 
     @interface(PassThrough, PassThrough, OtherGentle)
     def import_(self, identifier, other_gentle):
@@ -379,7 +379,36 @@ class GentleNext(Gentle):
         """
         identifier_def = Identifier(other_gentle)
         (directory, identifier) = identifier_def.caller_to_fn(identifier)
-        return self.__copy(other_gentle, (directory, identifier), self)
+        return GentleNext.__copy(other_gentle, (directory, identifier), self)
+
+    @staticmethod
+    def __copy_single(from_gentle, (from_directory, from_identifier), to_gentle):
+        content = from_gentle.get(from_identifier)
+        if from_directory == from_gentle.content_dir:
+            to_gentle.put(content)
+            return from_identifier
+        else:
+            # Have to copy the content first, or
+            # to_gentle.put() -> to_gentle.full() will raise an exception:
+            content = GentleNext.__copy_single(from_gentle, from_gentle.full(content), to_gentle)
+            to_gentle.put(from_identifier, content)
+            return content
+
+    @interface(PassThrough, Identifier, OtherGentle)
+    def exp(self, (directory, identifier), other_gentle):
+        """
+        Copy a single data item to another Gentle data directory.
+        """
+        return GentleNext.__copy_single(self, (directory, identifier), other_gentle)
+
+    @interface(PassThrough, PassThrough, OtherGentle)
+    def imp(self, identifier, other_gentle):
+        """
+        Copy a single data item from another Gentle data directory.
+        """
+        identifier_def = Identifier(other_gentle)
+        (directory, identifier) = identifier_def.caller_to_fn(identifier)
+        return GentleNext.__copy_single(other_gentle, (directory, identifier), self)
 
     def help(self):
         import gentle_da92de4118f6fa91_next
