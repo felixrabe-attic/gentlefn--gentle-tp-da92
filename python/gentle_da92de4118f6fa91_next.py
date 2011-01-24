@@ -346,7 +346,6 @@ class GentleNext(Gentle):
     @staticmethod
     def __copy(from_gentle, (from_directory, from_identifier), to_gentle):
         found_by_key = from_gentle._findall(from_identifier)
-        # from_gentle.rm(identifier)
         pointers, contents = [], []
         for key, sublist in found_by_key.iteritems():
             key = key.split(":")
