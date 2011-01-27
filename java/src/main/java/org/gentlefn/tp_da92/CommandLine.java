@@ -1,4 +1,4 @@
-package org.gentlefn.tech_preview_da92;
+package org.gentlefn.tp_da92;
 
 import java.io.IOException;
 
