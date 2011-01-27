@@ -2,13 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Gentle Technology Preview (da92de4118f6fa91) - Base Module
+Gentle TP-DA92 - Base Module.
 
-Unique Gentle identifier for this Gentle Technology Preview:
-    da92de4118f6fa915b6bdd73f090ad57dc153082600855e5c7a85e8fe054c5a1
-
-The explicit goal of Gentle is to drastically simplify computer programming and
-user interfaces.
+Provides the basic, filesystem-based database classes, implemented in Python.
 """
 # Copyright (C) 2010, 2011  Felix Rabe
 #

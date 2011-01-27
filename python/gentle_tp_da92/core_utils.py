@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Gentle Technology Preview (da92de4118f6fa91) - Utility Module
-
-Unique Gentle identifier for this Gentle Technology Preview:
-    da92de4118f6fa915b6bdd73f090ad57dc153082600855e5c7a85e8fe054c5a1
+Gentle TP-DA92 - Utility Module.
 
 This module provides some utility functions to the Gentle Core Module.
 """
