@@ -30,38 +30,37 @@ public class Core {
     private File pointerDir;
 
     public Core(File directory) throws IOException {
-        if (directory == null) {
+        topDirectory = directory;
+        if (topDirectory == null) {
             String envDataDir = System.getenv(ENVIRON_DATA_DIR_KEY);
             if (envDataDir == null) {
-                directory = DEFAULT_DATA_DIR;
+                topDirectory = DEFAULT_DATA_DIR;
             } else {
-                directory = new File(envDataDir);
+                topDirectory = new File(envDataDir);
             }
         }
-        directory.mkdirs();  // TODO: make them only readable by owner
+        contentDir = new File(topDirectory, "content_db");
+        pointerDir = new File(topDirectory, "pointer_db");
 
-        contentDir = new File(directory, "content_db");
-        pointerDir = new File(directory, "pointer_db");
-
-        mkdirIfNotExists(directory);
+        mkdirIfNotExists(topDirectory);
         mkdirIfNotExists(contentDir);
         mkdirIfNotExists(pointerDir);
 
-        if (!(directory.isDirectory() && contentDir.isDirectory() && pointerDir.isDirectory())) {
+        if (!(topDirectory.isDirectory() && contentDir.isDirectory() && pointerDir.isDirectory())) {
             throw new IOException("Specified an existing path that is not a directory");
         }
     }
 
     private void mkdirIfNotExists(File directory) {
-        directory.mkdir();
-
-        // Make readable / writable / executable by owner only:
-        directory.setReadable(false, false);
-        directory.setReadable(true, true);
-        directory.setWritable(false, false);
-        directory.setWritable(true, true);
-        directory.setExecutable(false, false);
-        directory.setExecutable(true, true);
+        if (directory.mkdir()) {
+            // Make readable / writable / executable by owner only:
+            directory.setReadable(false, false);
+            directory.setReadable(true, true);
+            directory.setWritable(false, false);
+            directory.setWritable(true, true);
+            directory.setExecutable(false, false);
+            directory.setExecutable(true, true);
+        }
     }
 
     public Core() throws IOException {

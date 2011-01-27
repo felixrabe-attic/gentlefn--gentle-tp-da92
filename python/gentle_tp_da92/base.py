@@ -36,24 +36,24 @@ class _GentleDB(object):
     container types to the greatest extent possible.
 
     Usage summary:
-    >>> gentle_db = _GentleDB(location)
+    >>> gentle_db = _GentleDB(directory)
     >>> gentle_db[identifier]
     'Content.'
     >>> del gentle_db[identifier]
     """
 
-    def __init__(self, location):
-        self.location = location
+    def __init__(self, directory):
+        self.directory = directory
 
     def __getitem__(self, identifier):
         validate_identifier_format(identifier)
-        filename = os.path.join(self.location, identifier)
+        filename = os.path.join(self.directory, identifier)
         result = open(filename, "rb").read()
         return result
 
     def __delitem__(self, identifier):
         validate_identifier_format(identifier)
-        filename = os.path.join(self.location, identifier)
+        filename = os.path.join(self.directory, identifier)
         os.remove(filename)
 
 
@@ -68,7 +68,7 @@ class GentleContentDB(_GentleDB):
         identifier.
         """
         content_identifier = sha256(byte_string)
-        filename = os.path.join(self.location, content_identifier)
+        filename = os.path.join(self.directory, content_identifier)
         if not os.path.exists(filename):  # Give priority to pre-existing content.
             create_file_with_mode(filename, 0400).write(byte_string)
         return content_identifier
@@ -85,14 +85,14 @@ class GentlePointerDB(_GentleDB):
         """
         validate_identifier_format(pointer_identifier)
         validate_identifier_format(content_identifier)
-        filename = os.path.join(self.location, pointer_identifier)
+        filename = os.path.join(self.directory, pointer_identifier)
         create_file_with_mode(filename, 0600).write(content_identifier)
         return pointer_identifier
 
 
 class GentleData(object):
 
-    def __init__(self, location):
-        self.location = os.path.abspath(location)
-        self.content_db = GentleContentDB(os.path.join(self.location, "content_db"))
-        self.pointer_db = GentlePointerDB(os.path.join(self.location, "pointer_db"))
+    def __init__(self, directory):
+        self.directory = os.path.abspath(directory)
+        self.content_db = GentleContentDB(os.path.join(self.directory, "content_db"))
+        self.pointer_db = GentlePointerDB(os.path.join(self.directory, "pointer_db"))
