@@ -21,7 +21,6 @@ This module provides some utility functions to the Gentle Core Module.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from hashlib import sha256 as _sha256
 import os
 
 

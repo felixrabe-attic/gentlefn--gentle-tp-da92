@@ -21,6 +21,8 @@ Provides the basic, filesystem-based database classes, implemented in Python.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from hashlib import sha256
+
 from .utilities import *
 
 
@@ -63,7 +65,7 @@ class GentleContentDB(GentleBaseDB):
         Enter content into the content database and return its SHA-256 content
         identifier.
         """
-        content_identifier = sha256(byte_string)
+        content_identifier = sha256(byte_string).hexdigest()
         filename = os.path.join(self.directory, content_identifier)
         if not os.path.exists(filename):  # Give priority to pre-existing content.
             create_file_with_mode(filename, 0400).write(byte_string)
