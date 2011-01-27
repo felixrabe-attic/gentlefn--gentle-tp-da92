@@ -2,19 +2,20 @@ Gentle Technology Preview DA92 (TP-DA92)
 ========================================
 
 The explicit goal of Gentle is to FUNDAMENTALLY SIMPLIFY COMPUTER PROGRAMMING
-AND USER INTERFACES.  The design of this tech preview resulted from years of
-intensive education, thinking and development.
+AND USER INTERFACES.
 
 This Technology Preview implements the fundamental operations needed to store
-and retrieve data on a computer, using two simple dictionary data structures.
+and retrieve data on a computer, using two simple, filesystem-based, dictionary
+data structures.
 
 One dictionary, called the content database, is a content-addressable store.
 The value is the data content, and the key is the SHA-256 sum of that value.
 The key-value entries in the content database are inherently immutable.
 
 The second dictionary, called the pointer database, stores references to these
-SHA-256 keys.  The value is the SHA-256 sum, and the key is a generated 256-bit
-random number.  The values of pointer database entries are mutable.
+SHA-256 keys.  The value is the SHA-256 sum, and the key (usually) is a
+generated 256-bit random number.  The values of pointer database entries are
+mutable.
 
 There is a third identifier namespace of a smiliar nature.  It actually does
 not store any data, and the only meaningful method that operates on it is the
@@ -23,8 +24,8 @@ Identifiers in this namespace are not backed by data.  Rather, they can be used
 to represent real objects, like buildings, people, computer equipment, and so
 forth.  This very technology preview uses the identifier
     da92de4118f6fa915b6bdd73f090ad57dc153082600855e5c7a85e8fe054c5a1
-in exactly this way.  This identifier is unique and long-lasting, more so than
-a project name or URL.
+in exactly this way (note the first four digits).  This identifier is unique and
+long-lasting, more so than a project name or URL.
 
 
 Scope of this technology preview
