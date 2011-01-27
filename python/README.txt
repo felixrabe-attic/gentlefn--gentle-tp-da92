@@ -1,5 +1,5 @@
-Gentle Technology Preview (da92de4118f6fa91)
-============================================
+Gentle Technology Preview DA92 (TP-DA92)
+========================================
 
 The explicit goal of Gentle is to FUNDAMENTALLY SIMPLIFY COMPUTER PROGRAMMING
 AND USER INTERFACES.  The design of this tech preview resulted from years of

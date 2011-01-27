@@ -1,5 +1,5 @@
-Gentle Technology Preview (da92de4118f6fa91)
-============================================
+Gentle Technology Preview DA92 (TP-DA92)
+========================================
 
 The main implementation language (so far) is Python; read python/README.txt for
 more information.

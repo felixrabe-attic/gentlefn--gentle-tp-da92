@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
-Gentle Technology Preview (da92de4118f6fa91) - Core Module
+Gentle Technology Preview (da92de4118f6fa91) - Base Module
 
 Unique Gentle identifier for this Gentle Technology Preview:
     da92de4118f6fa915b6bdd73f090ad57dc153082600855e5c7a85e8fe054c5a1
 
-The functionality of the Gentle Core is the result of years of development and
-careful design.  The explicit goal of Gentle is to drastically simplify
-computer programming and user interfaces.
+The explicit goal of Gentle is to drastically simplify computer programming and
+user interfaces.
 """
 # Copyright (C) 2010, 2011  Felix Rabe
 #
@@ -26,12 +25,12 @@ computer programming and user interfaces.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gentle_da92.core_utils import *
+from .core_utils import *
 
 
 class _GentleDB(object):
     """
-    Base class for the Gentle databases.
+    Base class for the Gentle TP-DA92 databases.
 
     Classes inheriting from _GentleDB strive to emulate standard Python
     container types to the greatest extent possible.

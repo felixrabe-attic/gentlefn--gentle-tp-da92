@@ -25,6 +25,7 @@ public class Core {
     public static final File DEFAULT_DATA_DIR = new File(System.getProperty("user.home"), ".gentle_da92de4118f6fa91");
     public static final String ENVIRON_DATA_DIR_KEY = "GENTLE_DA92DE41_DIR";
 
+    private File topDirectory;
     private File contentDir;
     private File pointerDir;
 
@@ -37,7 +38,6 @@ public class Core {
                 directory = new File(envDataDir);
             }
         }
-        System.out.println(directory.getCanonicalPath());
         directory.mkdirs();  // TODO: make them only readable by owner
 
         contentDir = new File(directory, "content_db");
