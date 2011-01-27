@@ -58,17 +58,6 @@ def random():
     """
     return os.urandom(256 / 8).encode("hex")
 
-def sha256(byte_string):
-    """
-    Return the SHA-256 hash value of the given byte_string in hexadecimal
-    representation.
-
-    Used for entering content into the content database.
-    """
-    sha256_object = _sha256()
-    sha256_object.update(byte_string)
-    return sha256_object.hexdigest()
-
 def identifier_format_is_valid(identifier):
     if (len(identifier) == IDENTIFIER_LENGTH and
         all(c in IDENTIFIER_DIGITS for c in identifier)):

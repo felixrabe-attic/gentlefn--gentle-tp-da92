@@ -41,7 +41,7 @@ from __future__ import print_function
 DEBUG = False
 
 import errno
-from   hashlib import sha1
+from   hashlib import sha256
 import json
 import os
 import platform
@@ -51,7 +51,7 @@ import time
 
 from fuse import FUSE, FuseOSError, Operations
 
-from gentle_da92.core_utils import sha256 as sha, random
+from gentle_tp_da92.utilities import random
 
 ROOT_POINTER = \
     "0000000000000000f8dc5728545c9273de850a6f25f259e28ce37a7f9048d4f4"
@@ -129,7 +129,8 @@ class GentleRootDir(VirtualDirectory):
         for key, value in tree.items():
             del tree[key]
             new_path = "%s%s%s" % (path, os.path.sep, key)
-            pointer = sha(self._pointer_generation_namespace + new_path)
+            pointer_content = self._pointer_generation_namespace + new_path
+            pointer = sha256(pointer_content).hexdigest()
             if isinstance(value, dict):  # value is a subtree
                 key_suffix = ":json:pointer"
                 content_hash = self._gentle_reset_traversal(value, new_path)
@@ -181,7 +182,7 @@ class GentleContentDir(VirtualDirectory):
         self.add_content("{}")
         self.add_content('{"content:content":"%s"}' % self.add_content(""))
     def add_content(self, content):
-        content_hash = sha(content)
+        content_hash = sha256(content).hexdigest()
         self[content_hash] = GentleContent(self._rootdir, content)
         return content_hash
 

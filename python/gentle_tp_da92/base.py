@@ -21,18 +21,18 @@ Provides the basic, filesystem-based database classes, implemented in Python.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .core_utils import *
+from .utilities import *
 
 
-class _GentleDB(object):
+class GentleBaseDB(object):
     """
     Base class for the Gentle TP-DA92 databases.
 
-    Classes inheriting from _GentleDB strive to emulate standard Python
+    Classes inheriting from GentleBaseDB strive to emulate standard Python
     container types to the greatest extent possible.
 
     Usage summary:
-    >>> gentle_db = _GentleDB(directory)
+    >>> gentle_db = GentleBaseDB(directory)
     >>> gentle_db[identifier]
     'Content.'
     >>> del gentle_db[identifier]
@@ -53,7 +53,7 @@ class _GentleDB(object):
         os.remove(filename)
 
 
-class GentleContentDB(_GentleDB):
+class GentleContentDB(GentleBaseDB):
     """
     Represents the Gentle content database.
     """
@@ -70,7 +70,7 @@ class GentleContentDB(_GentleDB):
         return content_identifier
 
 
-class GentlePointerDB(_GentleDB):
+class GentlePointerDB(GentleBaseDB):
     """
     Represents the Gentle pointer database.
     """
@@ -86,7 +86,7 @@ class GentlePointerDB(_GentleDB):
         return pointer_identifier
 
 
-class GentleData(object):
+class GentleDataStore(object):
 
     def __init__(self, directory):
         self.directory = os.path.abspath(directory)
