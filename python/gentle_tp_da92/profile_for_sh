@@ -1,0 +1,46 @@
+# Gentle TP-DA92 - Shell profile snippet for Unix command line usage.
+
+# Author: Felix Rabe, 2011
+# The content of this particular file is in the public domain, and is not copyrighted.
+
+# Usage - put the following lines into your ~/.profile, ~/.bashrc, or ~/.bash_profile:
+
+# _gentle_profile="$(python -c 'import os, gentle_tp_da92 as g; print os.path.dirname(g.__file__)')/profile_for_sh"
+# if [ -f "${_gentle_profile}" ] ; then
+#     source "${_gentle_profile}"
+# fi
+
+# - or just cut-and-paste pieces of this file anywhere you like.
+
+# Make sure $EDITOR is defined:
+if [ -z "${EDITOR}" ] ; then
+    export EDITOR=nano
+fi
+
+alias g='python -m gentle_da92de4118f6fa91_next'
+alias gg='python -m gentle_da92de4118f6fa91_cli'
+alias gentle_tp_da92='python -m gentle_tp_da92.__main__'
+alias g2='python -m gentle_tp_da92.__main__'
+
+export G=GENTLE_DA92DE41_DIR
+export G2=GENTLE_TP_DA92_DIR
+# e.g.: echo "${G}=${!G}" ; export ${G}=".../x/y" ; export ${G2}="${!G}"
+
+function ged {
+	g="$1"
+	fn="$(mktemp -t gentle_da92_tmpfile)"
+	gg get "${g}" > "${fn}" &&
+		"${EDITOR}" "${fn}" &&
+		gg put "${g}" < "${fn}" > /dev/null
+	rm -f "${fn}"
+}
+
+function gedx {
+	g="$1"
+	fn="$(mktemp -t gentle_da92_tmpfile)"
+	gg get "${g}" > "${fn}" &&
+		(echo -n "${fn}" | pbcopy) &&
+		read -p "Edit ${fn} and press enter " &&
+		gg put "${g}" < "${fn}" > /dev/null
+	rm -f "${fn}"
+}
