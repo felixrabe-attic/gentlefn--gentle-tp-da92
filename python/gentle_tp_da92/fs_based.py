@@ -2,9 +2,27 @@
 # -*- coding: utf-8 -*-
 
 """
-Gentle TP-DA92 - Filesystem-Based Data Module.
+Gentle TP-DA92 - Filesystem-Based Data Store Implementation Module.
 
-Provides the basic, filesystem-based database classes, implemented in Python.
+Provides basic, filesystem-based data store classes, implemented in Python.
+gentle_tp_da92.fs_based.GentleDataStore operates on the following directory
+tree:
+
+    .../<data store top directory>/
+        content_db/
+            1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd
+            4567cdef4567cdef4567cdef4567cdef4567cdef4567cdef4567cdef4567cdef
+            ... (files containing the real content; name = SHA-256(content))
+        pointer_db/
+            3456bcde3456bcde3456bcde3456bcde3456bcde3456bcde3456bcde3456bcde
+            5678fedc5678fedc5678fedc5678fedc5678fedc5678fedc5678fedc5678fedc
+            ... (files containing names of content; name = random)
+
+It is recommended to use the gentle_tp_da92.easy module in applications, instead
+of directly using the data store implementation modules.
+
+For documentation on the interfaces of the classes provided by this module, see
+the gentle_tp_da92.data_store_interfaces module.
 """
 # Copyright (C) 2010, 2011  Felix Rabe
 #
@@ -21,66 +39,56 @@ Provides the basic, filesystem-based database classes, implemented in Python.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from hashlib import sha256
+import glob
+from   hashlib import sha256
+import os
 
-from .utilities import *
+from   . import data_store_interfaces
+from   .utilities import *
 
 
-class GentleBaseDB(object):
+class _GentleDB(data_store_interfaces._GentleDB):
     """
-    Base class for the Gentle TP-DA92 databases.
-
-    Classes inheriting from GentleBaseDB strive to emulate standard Python
-    container types to the greatest extent possible.
-
-    Usage summary:
-    >>> gentle_db = GentleBaseDB(directory)
-    >>> gentle_db[identifier]
-    'Content.'
-    >>> del gentle_db[identifier]
+    Base class for Gentle TP-DA92 filesystem-based databases.
     """
 
-    def __init__(self, directory):
+    def __init__(self, directory, mkdir=False):
+        super(_GentleDB, self).__init__()
         self.directory = directory
+        if mkdir and not os.path.exists(self.directory):
+            os.mkdir(self.directory, 0700)
 
     def __getitem__(self, identifier):
         validate_identifier_format(identifier)
         filename = os.path.join(self.directory, identifier)
-        result = open(filename, "rb").read()
-        return result
+        content = open(filename, "rb").read()
+        return content
 
     def __delitem__(self, identifier):
         validate_identifier_format(identifier)
         filename = os.path.join(self.directory, identifier)
         os.remove(filename)
 
+    def find_identifiers_starting_with(self, partial_identifier):
+        partial_filename = os.path.join(self.directory, partial_identifier)
+        matches = glob.glob(partial_filename + "*")
+        identifiers = sorted(os.path.basename(m) for m in matches)
+        return identifiers
 
-class GentleContentDB(GentleBaseDB):
-    """
-    Represents the Gentle content database.
-    """
+
+class _GentleContentDB(data_store_interfaces._GentleContentDB, _GentleDB):
 
     def append(self, byte_string):
-        """
-        Enter content into the content database and return its SHA-256 content
-        identifier.
-        """
         content_identifier = sha256(byte_string).hexdigest()
         filename = os.path.join(self.directory, content_identifier)
-        if not os.path.exists(filename):  # Give priority to pre-existing content.
+        if not os.path.exists(filename):
             create_file_with_mode(filename, 0400).write(byte_string)
         return content_identifier
 
 
-class GentlePointerDB(GentleBaseDB):
-    """
-    Represents the Gentle pointer database.
-    """
+class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
 
     def __setitem__(self, pointer_identifier, content_identifier):
-        """
-        Create or change a pointer in the pointer database.
-        """
         validate_identifier_format(pointer_identifier)
         validate_identifier_format(content_identifier)
         filename = os.path.join(self.directory, pointer_identifier)
@@ -88,9 +96,16 @@ class GentlePointerDB(GentleBaseDB):
         return pointer_identifier
 
 
-class GentleDataStore(object):
+class GentleDataStore(data_store_interfaces.GentleDataStore):
 
-    def __init__(self, directory):
+    def __init__(self, directory, mkdir=False):
+        super(GentleDataStore, self).__init__()
         self.directory = os.path.abspath(directory)
-        self.content_db = GentleContentDB(os.path.join(self.directory, "content_db"))
-        self.pointer_db = GentlePointerDB(os.path.join(self.directory, "pointer_db"))
+        if mkdir and not os.path.exists(self.directory):
+            os.mkdir(self.directory, 0700)
+
+        self._content_db = _GentleContentDB(
+            os.path.join(self.directory, "content_db"), mkdir=mkdir)
+
+        self._pointer_db = _GentlePointerDB(
+            os.path.join(self.directory, "pointer_db"), mkdir=mkdir)

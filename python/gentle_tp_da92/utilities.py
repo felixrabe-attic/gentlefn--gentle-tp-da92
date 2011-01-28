@@ -58,6 +58,7 @@ def random():
     return os.urandom(256 / 8).encode("hex")
 
 def identifier_format_is_valid(identifier):
+    if not isinstance(identifier, basestring): return False
     if (len(identifier) == IDENTIFIER_LENGTH and
         all(c in IDENTIFIER_DIGITS for c in identifier)):
         return True
