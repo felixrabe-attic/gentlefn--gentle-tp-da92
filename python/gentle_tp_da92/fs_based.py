@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Gentle TP-DA92 - Base Module.
+Gentle TP-DA92 - Filesystem-Based Data Module.
 
 Provides the basic, filesystem-based database classes, implemented in Python.
 """
