@@ -65,6 +65,9 @@ class Command(object):
 
         return option_parser
 
+    def run(self, *a, **k):
+        pass
+
 
 class Get(Command):
 
@@ -94,34 +97,34 @@ def main():
         )
     option_parser.disable_interspersed_args()
 
-    common_options = OptionGroup(option_parser, "Common options")
+    common_option_group = OptionGroup(option_parser, "Common options")
 
-    common_options.add_option(
+    common_option_group.add_option(
         "-h", "--help", default=False, action="store_true",
         help="""Show this help message and exit; or, if <command> has been
                 specified, show that command's help message"""
         )
 
-    common_options.add_option(
+    common_option_group.add_option(
         "--implementation", default="gentle_tp_da92.fs_based",
         help="""The module used as the implementation for data store access;
                 default: '%default'"""
         )
 
-    common_options.add_option(
+    common_option_group.add_option(
         "--raw", default=False, action="store_true",
         help="""Do not process input/output, instead pass content unchanged
                 to/from the data store"""
         )
 
-    option_parser.add_option_group(common_options)
+    option_parser.add_option_group(common_option_group)
 
-    options, args = option_parser.parse_args()
+    common_options, args = option_parser.parse_args()
     command = None
     if len(args) > 0:
         command, args = _all_commands.get(args[0]), args[1:]
 
-    if options.help or command is None:
+    if common_options.help or command is None:
         if command is not None:
             option_parser = command.get_option_parser(option_parser)
         option_parser.print_help()
@@ -139,6 +142,8 @@ def main():
 
     cmd_options, cmd_args = \
         command.get_option_parser(option_parser).parse_args(args)
+
+    command.run(common_options, cmd_options, cmd_args)
 
 
 if __name__ == "__main__":
