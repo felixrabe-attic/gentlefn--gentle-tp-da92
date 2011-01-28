@@ -26,8 +26,8 @@ from __future__ import print_function
 
 import sys
 
-from    ._optparse import *
-from    . import easy
+from   ._optparse import *
+from   . import easy
 
 
 _all_commands = {}

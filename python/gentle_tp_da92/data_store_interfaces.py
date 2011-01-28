@@ -94,6 +94,8 @@ class _GentlePointerDB(_GentleDB):
         """
         Create or change a pointer in the pointer database.
         """
+        # Would be awesome if that worked for self[x]=y!
+        # If you need this return value, use self.__setitem__(x,y) instead.
         return None
 
 
