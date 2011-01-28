@@ -51,7 +51,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
         validate_identifier_format(identifier)
         del self.db[identifier]
 
-    def find_identifiers_starting_with(self, partial_identifier):
+    def find(self, partial_identifier=""):
         identifiers = sorted(i for i in self.db
                              if i.startswith(partial_identifier))
         return identifiers
@@ -79,5 +79,5 @@ class GentleDataStore(data_store_interfaces.GentleDataStore):
 
     def __init__(self):
         super(GentleDataStore, self).__init__()
-        self._content_db = _GentleContentDB()
-        self._pointer_db = _GentlePointerDB()
+        self.content_db = _GentleContentDB()
+        self.pointer_db = _GentlePointerDB()

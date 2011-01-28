@@ -53,7 +53,7 @@ def random():
     """
     Return a random-generated 256-bit number in hexadecimal representation.
 
-    Useful for creating pointers in the pointer database.
+    These numbers are suitable as identifiers in a pointer database.
     """
     return os.urandom(256 / 8).encode("hex")
 

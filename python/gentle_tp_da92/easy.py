@@ -73,7 +73,7 @@ class _InitSimplifiers(object):
     ## SIMPLIFICATION FOR gentle_tp_da92.fs_based ##
 
     USER_HOME = os.path.expanduser("~")
-    FS_DEFAULT_DIR = os.path.join(USER_HOME, ".gentle_tp_da92_default_data_store")
+    FS_DEFAULT_DIR = os.path.join(USER_HOME, ".gentle_tp_da92_default_datastore")
     FS_ENVIRON_KEY = "GENTLE_TP_DA92_DIR"
 
     @classmethod
@@ -81,6 +81,7 @@ class _InitSimplifiers(object):
                                            directory=None, *a, **k):
         if directory is None:
             directory = os.environ.get(cls.FS_ENVIRON_KEY, cls.FS_DEFAULT_DIR)
+        directory = os.path.abspath(directory)
         k["mkdir"] = k.get("mkdir", True)  # default to True instead of to False
         return ((directory,) + a, k)
 
@@ -97,11 +98,9 @@ class GentleEasyDataStoreWrapper(object):
         self.gentle_data_store = gentle_data_store
 
         # Shortcuts for interactive usage:
-        self.ds = self.gentle_data_store
-        self.c  = self.ds._content_db
-        self.cf = self.ds._content_db.find_identifiers_starting_with
-        self.p  = self.ds._pointer_db
-        self.pf = self.ds._pointer_db.find_identifiers_starting_with
+        self.ds  = self.gentle_data_store
+        self.c   = self.ds.content_db
+        self.p   = self.ds.pointer_db
 
 
 def Gentle(implementation_module="gentle_tp_da92.fs_based", *a, **k):

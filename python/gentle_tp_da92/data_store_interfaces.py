@@ -54,12 +54,13 @@ class _GentleDB(object):
         """
         pass
 
-    def find_identifiers_starting_with(self, partial_identifier):
+    def find(self, partial_identifier=""):
         """
         Find all the identifiers registered in this database that start with
         partial_identifier.  Returns a sorted list.  The list may be empty.
 
-        To receive the full list of all identifiers used as keys in this database
+        Uses "" as the default partial_identifier, thus returning the full list
+        of all identifiers by default.
         """
         return []
 
@@ -98,8 +99,8 @@ class _GentlePointerDB(_GentleDB):
 
 class GentleDataStore(object):
     """
-    The Gentle TP-DA92 data store, consisting of one content database and one
-    pointer database.
+    The Gentle TP-DA92 data store, consisting of one content database
+    (attribute 'content_db') and one pointer database (attribute 'pointer_db').
     """
 
     def __init__(self, *a, **k):

@@ -69,7 +69,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
         filename = os.path.join(self.directory, identifier)
         os.remove(filename)
 
-    def find_identifiers_starting_with(self, partial_identifier):
+    def find(self, partial_identifier=""):
         partial_filename = os.path.join(self.directory, partial_identifier)
         matches = glob.glob(partial_filename + "*")
         identifiers = sorted(os.path.basename(m) for m in matches)
@@ -104,8 +104,8 @@ class GentleDataStore(data_store_interfaces.GentleDataStore):
         if mkdir and not os.path.exists(self.directory):
             os.mkdir(self.directory, 0700)
 
-        self._content_db = _GentleContentDB(
+        self.content_db = _GentleContentDB(
             os.path.join(self.directory, "content_db"), mkdir=mkdir)
 
-        self._pointer_db = _GentlePointerDB(
+        self.pointer_db = _GentlePointerDB(
             os.path.join(self.directory, "pointer_db"), mkdir=mkdir)
