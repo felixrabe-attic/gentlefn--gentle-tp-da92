@@ -78,7 +78,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
 
 class _GentleContentDB(data_store_interfaces._GentleContentDB, _GentleDB):
 
-    def append(self, byte_string):
+    def __add__(self, byte_string):
         content_identifier = sha256(byte_string).hexdigest()
         filename = os.path.join(self.directory, content_identifier)
         if not os.path.exists(filename):

@@ -73,7 +73,7 @@ class _GentleContentDB(_GentleDB):
     A Gentle TP-DA92 content database.
     """
 
-    def append(self, byte_string):
+    def __add__(self, byte_string):
         """
         Enter content into the content database and return its SHA-256 sum as
         its content identifier.
@@ -81,6 +81,9 @@ class _GentleContentDB(_GentleDB):
         This method gives priority to pre-existing content.  This means that
         content will not be saved if its SHA-256 sum already exists as a key in
         the database.
+
+        Example:
+        >>> identifier = content_db + "some content"
         """
         return None
 

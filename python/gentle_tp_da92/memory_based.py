@@ -59,7 +59,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
 
 class _GentleContentDB(data_store_interfaces._GentleContentDB, _GentleDB):
 
-    def append(self, byte_string):
+    def __add__(self, byte_string):
         content_identifier = sha256(byte_string).hexdigest()
         if not content_identifier in self.db:
             self.db[content_identifier] = byte_string

@@ -36,8 +36,10 @@ from   functools import partial
 import os
 import sys
 
-from   .utilities import random as rnd
+from   .utilities import *
 
+isvalid = is_identifier_format_valid
+rnd = random
 
 
 class _InitSimplifiers(object):
@@ -95,12 +97,38 @@ class GentleEasyDataStoreWrapper(object):
     """
 
     def __init__(self, gentle_data_store):
-        self.gentle_data_store = gentle_data_store
+        self.ds = gentle_data_store
+        self.c  = self.ds.content_db
+        self.p  = self.ds.pointer_db
 
-        # Shortcuts for interactive usage:
-        self.ds  = self.gentle_data_store
-        self.c   = self.ds.content_db
-        self.p   = self.ds.pointer_db
+    def __getitem__(self, partial_identifier):
+        content_identifers = self.c.find(partial_identifier)
+        pointer_identifers = self.p.find(partial_identifier)
+        identifiers = content_identifers + pointer_identifers
+        if len(identifiers) > 1:
+            return sorted(identifiers)
+        if content_identifers:
+            return self.c[content_identifers[0]]
+        else:
+            return self.p[pointer_identifers[0]]
+
+    def __setitem__(self, pointer_identifier, content_identifier):
+        if not is_identifier_format_valid(pointer_identifier):
+            identifiers = self.p.find(pointer_identifier)
+            if len(identifiers) != 1:
+                raise InvalidIdentifierException(pointer_identifier)
+            pointer_identifier = identifiers[0]
+
+        if not is_identifier_format_valid(content_identifier):
+            identifiers = self.c.find(content_identifier)
+            if len(identifiers) != 1:
+                raise InvalidIdentifierException(content_identifier)
+            content_identifier = identifiers[0]
+
+        self.p[partial_pointer_identifier] = content_identifier
+
+    def __add__(self, content):
+        return self.c + content
 
 
 def Gentle(implementation_module="gentle_tp_da92.fs_based", *a, **k):
