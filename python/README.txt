@@ -1,12 +1,11 @@
-Gentle Technology Preview DA92 (TP-DA92)
-========================================
+The simplest database in the world!
+-----------------------------------
 
 The explicit goal of Gentle is to FUNDAMENTALLY SIMPLIFY COMPUTER PROGRAMMING
 AND USER INTERFACES.
 
 This Technology Preview implements the fundamental operations needed to store
-and retrieve data on a computer, using two simple, filesystem-based, dictionary
-data structures.
+and retrieve data on a computer, using two simple dictionary data structures.
 
 One dictionary, called the content database, is a content-addressable store.
 The value is the data content, and the key is the SHA-256 sum of that value.
@@ -26,14 +25,6 @@ forth.  This very technology preview uses the identifier
     da92de4118f6fa915b6bdd73f090ad57dc153082600855e5c7a85e8fe054c5a1
 in exactly this way (note the first four digits).  This identifier is unique and
 long-lasting, more so than a project name or URL.
-
-
-Scope of this technology preview
---------------------------------
-
-This technology preview uses simple filesystem-based data structures for storing
-data.  As soon as this backend proves insufficient, a new Gentle project (be it
-a technology preview or something else) will be started.
 
 
 Copyright statement
