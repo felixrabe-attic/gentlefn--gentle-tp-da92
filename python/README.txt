@@ -1,8 +1,8 @@
 The simplest database in the world!
 -----------------------------------
 
-The explicit goal of Gentle is to FUNDAMENTALLY SIMPLIFY COMPUTER PROGRAMMING
-AND USER INTERFACES.
+The explicit goal of Gentle is to
+**fundamentally simplify computer programming and user interfaces**.
 
 This Technology Preview implements the fundamental operations needed to store
 and retrieve data on a computer, using two simple dictionary data structures.

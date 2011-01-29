@@ -1,15 +1,15 @@
 # Gentle TP-DA92 - Shell profile snippet for Unix command line usage.
-
+#
 # Author: Felix Rabe, 2011
 # The content of this particular file is in the public domain, and is not copyrighted.
-
+#
 # Usage - put the following lines into your ~/.profile, ~/.bashrc, or ~/.bash_profile:
-
-# _gentle_profile="$(python -c 'import os, gentle_tp_da92 as g; print os.path.dirname(g.__file__)')/profile_for_sh"
-# if [ -f "${_gentle_profile}" ] ; then
-#     source "${_gentle_profile}"
-# fi
-
+#
+#   _gentle_profile="$(python -c 'import os, gentle_tp_da92 as g; print os.path.dirname(g.__file__)')/profile_for_sh"
+#   if [ -f "${_gentle_profile}" ] ; then
+#       source "${_gentle_profile}"
+#   fi
+#
 # - or just cut-and-paste pieces of this file anywhere you like.
 
 # Make sure $EDITOR is defined:
@@ -17,15 +17,19 @@ if [ -z "${EDITOR}" ] ; then
     export EDITOR=nano
 fi
 
+# Define aliases:
 alias g='python -m gentle_da92de4118f6fa91_next'
 alias gg='python -m gentle_da92de4118f6fa91_cli'
 alias gentle_tp_da92='python -m gentle_tp_da92.__main__'
 alias g2='python -m gentle_tp_da92.__main__'
+alias pygentle='python -i -c "from gentle_tp_da92 import * ; gentle = easy.Gentle(fs_based)"'
 
+# Shortcuts for the environment variable names in use:
 export G=GENTLE_DA92DE41_DIR
 export G2=GENTLE_TP_DA92_DIR
 # e.g.: echo "${G}=${!G}" ; export ${G}=".../x/y" ; export ${G2}="${!G}"
 
+# Edit the content of some pointer and store new content at that pointer:
 function ged {
 	g="$1"
 	fn="$(mktemp -t gentle_da92_tmpfile)"
@@ -35,12 +39,18 @@ function ged {
 	rm -f "${fn}"
 }
 
+# Edit the content of some pointer using another editor and store new content
+# at that pointer:
 function gedx {
 	g="$1"
 	fn="$(mktemp -t gentle_da92_tmpfile)"
+	# Copies $fn to clipboard if pbcopy exists or is defined, or fails silently
+	# otherwise:
+	(echo -n "${fn}" | pbcopy) 2> /dev/null
+	(echo -n "${fn}" | xclip -selection clipboard) 2> /dev/null
 	gg get "${g}" > "${fn}" &&
-		(echo -n "${fn}" | pbcopy) &&
 		read -p "Edit ${fn} and press enter " &&
 		gg put "${g}" < "${fn}" > /dev/null
 	rm -f "${fn}"
 }
+
