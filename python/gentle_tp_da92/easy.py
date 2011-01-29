@@ -104,18 +104,19 @@ class GentleEasyDataStoreWrapper(object):
     def find(self, partial_identifier=""):
         content_identifiers = self.c.find(partial_identifier)
         pointer_identifiers = self.p.find(partial_identifier)
-        return sorted(content_identifiers + pointer_identifiers)
+        all_identifiers = content_identifiers + pointer_identifiers
+        return sorted(all_identifiers)
 
     def __getitem__(self, partial_identifier):
-        content_identifers = self.c.find(partial_identifier)
-        pointer_identifers = self.p.find(partial_identifier)
-        identifiers = content_identifers + pointer_identifers
-        if len(identifiers) > 1:
-            return sorted(identifiers)
-        if content_identifers:
-            return self.c[content_identifers[0]]
+        content_identifiers = self.c.find(partial_identifier)
+        pointer_identifiers = self.p.find(partial_identifier)
+        all_identifiers = content_identifiers + pointer_identifiers
+        if len(all_identifiers) > 1:
+            return sorted(all_identifiers)  # a list
+        if content_identifiers:
+            return self.c[content_identifiers[0]]  # a string
         else:
-            return self.p[pointer_identifers[0]]
+            return self.p[pointer_identifiers[0]]  # a string
 
     def __setitem__(self, pointer_identifier, content_identifier):
         if not is_identifier_format_valid(pointer_identifier):
