@@ -101,7 +101,7 @@ class GentleEasyDataStoreWrapper(object):
         self.c  = self.ds.content_db
         self.p  = self.ds.pointer_db
     
-    def find(self, partial_identifier):
+    def find(self, partial_identifier=""):
         content_identifers = self.c.find(partial_identifier)
         pointer_identifers = self.p.find(partial_identifier)
         return sorted(content_identifiers + pointer_identifiers)
