@@ -67,7 +67,7 @@ class _GentleDB(object):
         return []
 
     def keys(self):
-        return self.find_identifiers_starting_with("")
+        return self.find("")
 
 
 class _GentleContentDB(_GentleDB):
