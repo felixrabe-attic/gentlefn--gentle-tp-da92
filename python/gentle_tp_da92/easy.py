@@ -170,7 +170,7 @@ class _GentleEasyDataStoreWrapper(object):
         if content_identifiers:
             del self.c[content_identifiers[0]]
         else:
-            del self.p[content_identifiers[0]]
+            del self.p[pointer_identifiers[0]]
 
 
 def Gentle(implementation_module="gentle_tp_da92.fs_based", *a, **k):
