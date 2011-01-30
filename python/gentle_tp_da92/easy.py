@@ -149,7 +149,7 @@ class _GentleEasyDataStoreWrapper(object):
     def __setitem__(self, pointer_identifier, content_identifier):
         pointer_identifier = self.__find_one(self.p, pointer_identifier)
         content_identifier = self.__find_one(self.c, content_identifier)
-        self.p[partial_pointer_identifier] = content_identifier
+        self.p[pointer_identifier] = content_identifier
 
     def __add__(self, content):
         return self.c + content
