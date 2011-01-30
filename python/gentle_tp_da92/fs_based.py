@@ -75,6 +75,10 @@ class _GentleDB(data_store_interfaces._GentleDB):
         identifiers = [os.path.basename(m) for m in matches]
         return identifiers
 
+    def __contains__(self, identifier):
+        filename = os.path.join(self.directory, identifier)
+        return os.path.exists(filename)
+
 
 class _GentleContentDB(data_store_interfaces._GentleContentDB, _GentleDB):
 

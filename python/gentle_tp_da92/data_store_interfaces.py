@@ -72,6 +72,13 @@ class _GentleDB(object):
         """
         return self.find("")
 
+    def __contains__(self, identifier):
+        """
+        Return True if the database contains content for the specified
+        identifier, and False otherwise.
+        """
+        return False
+
 
 class _GentleContentDB(_GentleDB):
     """

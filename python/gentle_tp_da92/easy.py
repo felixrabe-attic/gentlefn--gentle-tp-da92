@@ -174,6 +174,25 @@ class _GentleEasyDataStoreWrapper(object):
         else:
             del self.p[pointer_identifiers[0]]
 
+    def __contains__(self, identifier):
+        """
+        Return True if either database contains content for the specified
+        identifier, and False otherwise.
+
+        The given identifier may be a partial identifier.  In that case, return
+        True if either database contains content for some identifier starting
+        with the given identifier.
+        """
+        # Look up the identifier in the pointer database first, as the pointer
+        # database is:
+        #   1. smaller, and:
+        #   2. more likely to be the target of the enquiry.
+        pointer_identifiers = self.p.find(identifier)
+        if pointer_identifiers: return True
+        content_identifiers = self.c.find(identifier)
+        if content_identifiers: return True
+        return False
+
 
 def Gentle(implementation_module="gentle_tp_da92.fs_based", *a, **k):
     """

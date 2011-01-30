@@ -55,6 +55,9 @@ class _GentleDB(data_store_interfaces._GentleDB):
         identifiers = [i for i in self.db if i.startswith(partial_identifier)]
         return identifiers
 
+    def __contains__(self, identifier):
+        return identifier in self.db
+
 
 class _GentleContentDB(data_store_interfaces._GentleContentDB, _GentleDB):
 
