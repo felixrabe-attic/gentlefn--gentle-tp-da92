@@ -32,10 +32,12 @@ class _GentleDB(object):
     Classes inheriting from GentleBaseDB strive to emulate standard Python
     container types to the greatest extent possible.
 
-    Usage summary:
-    >>> gentle_db = GentleBaseDB()
+    Usage example:
+    >>> gentle_db = _GentleDB()
     >>> gentle_db[identifier]
     'Content.'
+    >>> gentle_db.find(identifier[:10])
+    ['<identifier>']
     >>> del gentle_db[identifier]
     """
 
@@ -71,6 +73,13 @@ class _GentleDB(object):
 class _GentleContentDB(_GentleDB):
     """
     A Gentle TP-DA92 content database.
+
+    Usage example:
+    >>> gentle_content_db = _GentleContentDB()
+    >>> content_identifier = gentle_content_db + "Some content"
+    >>> gentle_content_db[content_identifier]
+    'Some content'
+    >>> del gentle_content_db[content_identifier]
     """
 
     def __add__(self, byte_string):
@@ -91,6 +100,14 @@ class _GentleContentDB(_GentleDB):
 class _GentlePointerDB(_GentleDB):
     """
     A Gentle TP-DA92 pointer database.
+
+    Usage example:
+    >>> gentle_pointer_db = _GentlePointerDB()
+    >>> new_ptr_id = gentle_tp_da92.utilities.random()
+    >>> gentle_pointer_db[new_ptr_id] = content_identifier      # __setitem__
+    >>> gentle_pointer_db[new_ptr_id] == content_identifier     # __getitem__
+    True
+    >>> del gentle_pointer_db[new_ptr_id]
     """
 
     def __setitem__(self, pointer_identifier, content_identifier):
