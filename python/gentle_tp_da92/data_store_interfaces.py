@@ -67,6 +67,9 @@ class _GentleDB(object):
         return []
 
     def keys(self):
+        """
+        Alias for self.find("").
+        """
         return self.find("")
 
 
