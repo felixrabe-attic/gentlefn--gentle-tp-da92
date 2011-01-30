@@ -72,7 +72,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
     def find(self, partial_identifier=""):
         partial_filename = os.path.join(self.directory, partial_identifier)
         matches = glob.glob(partial_filename + "*")
-        identifiers = sorted(os.path.basename(m) for m in matches)
+        identifiers = [os.path.basename(m) for m in matches]
         return identifiers
 
 

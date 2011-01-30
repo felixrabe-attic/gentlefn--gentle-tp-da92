@@ -52,8 +52,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
         del self.db[identifier]
 
     def find(self, partial_identifier=""):
-        identifiers = sorted(i for i in self.db
-                             if i.startswith(partial_identifier))
+        identifiers = [i for i in self.db if i.startswith(partial_identifier)]
         return identifiers
 
 

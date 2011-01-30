@@ -110,12 +110,12 @@ class _GentleEasyDataStoreWrapper(object):
         """
         Find identifiers in both databases starting with partial_identifier.
 
-        Return a sorted list of all identifiers found.
+        Return an unsorted list of all identifiers found.
         """
         content_identifiers = self.c.find(partial_identifier)
         pointer_identifiers = self.p.find(partial_identifier)
         all_identifiers = content_identifiers + pointer_identifiers
-        return sorted(all_identifiers)
+        return all_identifiers
 
     def __getitem__(self, identifier):
         """
@@ -131,7 +131,7 @@ class _GentleEasyDataStoreWrapper(object):
         pointer_identifiers = self.p.find(identifier)
         all_identifiers = content_identifiers + pointer_identifiers
         if len(all_identifiers) > 1:
-            return sorted(all_identifiers)  # a list
+            return all_identifiers  # a list
         if content_identifiers:
             return self.c[content_identifiers[0]]  # a string
         else:

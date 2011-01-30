@@ -59,10 +59,10 @@ class _GentleDB(object):
     def find(self, partial_identifier=""):
         """
         Find all the identifiers registered in this database that start with
-        partial_identifier.  Returns a sorted list.  The list may be empty.
+        partial_identifier.  Return an unsorted list.  The list may be empty.
 
-        Uses "" as the default partial_identifier, thus returning the full list
-        of all identifiers by default.
+        If partial_identifier is not specified (default is ""), return the full
+        list of all identifiers.
         """
         return []
 
