@@ -75,16 +75,25 @@ class _InitSimplifiers(object):
     ## SIMPLIFICATION FOR gentle_tp_da92.fs_based ##
 
     USER_HOME = os.path.expanduser("~")
-    FS_DEFAULT_DIR = os.path.join(USER_HOME, ".gentle_tp_da92_default_datastore")
-    FS_ENVIRON_KEY = "GENTLE_TP_DA92_DIR"
+    FS_DEFAULT_DIRECTORY = os.path.join(USER_HOME, ".gentle_tp_da92_default_datastore")
+    FS_DEFAULT_ENVIRON_KEY = "GENTLE_TP_DA92_DIR"
 
     @classmethod
-    def simplify__gentle_tp_da92__fs_based(cls, fs_based,
-                                           directory=True, *a, **k):
-        if directory is True:  # i.e. not specified
-            directory = os.environ.get(cls.FS_ENVIRON_KEY, cls.FS_DEFAULT_DIR)
-        elif directory is None:  # 'None' has been specified explicitly
-            directory = cls.FS_DEFAULT_DIR
+    def simplify__gentle_tp_da92__fs_based(cls, fs_based, directory=True,
+                                           environ_key=True, *a, **k):
+        """
+        Convert arguments to be passed to fs_based.GentleDataStore().
+        """
+        # 'directory' is 'None' only if 'None' has been specified explicitly:
+        if directory is None:  # bypass environment variables and just use default dir
+            directory = cls.FS_DEFAULT_DIRECTORY
+        if directory is True:  # i.e. not specified, use environment variable if set
+            directory = cls.FS_DEFAULT_DIRECTORY
+            # 'environ_key' is 'None' only if 'None' has been specified explicitly:
+            if environ_key is not None:
+                if environ_key is True:  # i.e. not specified
+                    environ_key = cls.FS_DEFAULT_ENVIRON_KEY
+                directory = os.environ.get(environ_key, directory)
         directory = os.path.abspath(directory)
         k["mkdir"] = k.get("mkdir", True)  # default to True instead of to False
         return ((directory,) + a, k)
