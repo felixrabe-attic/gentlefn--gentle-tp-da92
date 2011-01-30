@@ -117,17 +117,18 @@ class _GentleEasyDataStoreWrapper(object):
         all_identifiers = content_identifiers + pointer_identifiers
         return sorted(all_identifiers)
 
-    def __getitem__(self, partial_identifier):
+    def __getitem__(self, identifier):
         """
         Get an item from either database.
 
+        The given identifier may be a partial identifier.
+
         Return the content of the found item as a string if exactly one item is
-        found whose identifier starts with the partial_identifier given,
-        otherwise return a list of the identifiers that start with
-        partial_identifier.
+        found whose identifier starts with the given identifier, otherwise
+        return a list of the identifiers that start with the given identifier.
         """
-        content_identifiers = self.c.find(partial_identifier)
-        pointer_identifiers = self.p.find(partial_identifier)
+        content_identifiers = self.c.find(identifier)
+        pointer_identifiers = self.p.find(identifier)
         all_identifiers = content_identifiers + pointer_identifiers
         if len(all_identifiers) > 1:
             return sorted(all_identifiers)  # a list
