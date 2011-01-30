@@ -91,7 +91,7 @@ class _InitSimplifiers(object):
 _init_simplifiers = _InitSimplifiers()
 
 
-class GentleEasyDataStoreWrapper(object):
+class _GentleEasyDataStoreWrapper(object):
     """
     Simplifies the usage of a GentleDataStore by combining the methods of the
     content and pointer databases.
@@ -158,5 +158,5 @@ def Gentle(implementation_module="gentle_tp_da92.fs_based", *a, **k):
     # Simplify arguments based on the implementation_module:
     a, k = _init_simplifiers[implementation_module](*a, **k)
     gentle_data_store = implementation_module.GentleDataStore(*a, **k)
-    gentle = GentleEasyDataStoreWrapper(gentle_data_store)
+    gentle = _GentleEasyDataStoreWrapper(gentle_data_store)
     return gentle
