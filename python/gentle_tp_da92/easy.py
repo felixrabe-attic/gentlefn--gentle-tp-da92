@@ -94,7 +94,11 @@ _init_simplifiers = _InitSimplifiers()
 class _GentleEasyDataStoreWrapper(object):
     """
     Simplifies the usage of a GentleDataStore by combining the methods of the
-    content and pointer databases.
+    content and pointer databases.  Also, the methods of this class accept
+    partial identifiers where the GentleDB's don't.
+
+    Use the Gentle() factory function in this module to create instances of this
+    class.
     """
 
     def __init__(self, gentle_data_store):
@@ -104,7 +108,9 @@ class _GentleEasyDataStoreWrapper(object):
 
     def find(self, partial_identifier=""):
         """
-        Find identifiers in either database.
+        Find identifiers in both databases starting with partial_identifier.
+
+        Return a sorted list of all identifiers found.
         """
         content_identifiers = self.c.find(partial_identifier)
         pointer_identifiers = self.p.find(partial_identifier)
@@ -114,6 +120,11 @@ class _GentleEasyDataStoreWrapper(object):
     def __getitem__(self, partial_identifier):
         """
         Get an item from either database.
+
+        Return the content of the found item as a string if exactly one item is
+        found whose identifier starts with the partial_identifier given,
+        otherwise return a list of the identifiers that start with
+        partial_identifier.
         """
         content_identifiers = self.c.find(partial_identifier)
         pointer_identifiers = self.p.find(partial_identifier)
