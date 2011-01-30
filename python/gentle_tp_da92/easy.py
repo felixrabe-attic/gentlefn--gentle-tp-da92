@@ -154,6 +154,24 @@ class _GentleEasyDataStoreWrapper(object):
     def __add__(self, content):
         return self.c + content
 
+    def __delitem__(self, identifier):
+        """
+        Remove an item from either database.
+
+        The given identifier may be a partial identifier.  In that case, there
+        must be exactly one identifier in both databases combined that starts
+        with the given identifier.
+        """
+        content_identifiers = self.c.find(identifier)
+        pointer_identifiers = self.p.find(identifier)
+        all_identifiers = content_identifiers + pointer_identifiers
+        if len(all_identifiers) != 1:
+            raise InvalidIdentifierException(identifier)
+        if content_identifiers:
+            del self.c[content_identifiers[0]]
+        else:
+            del self.p[content_identifiers[0]]
+
 
 def Gentle(implementation_module="gentle_tp_da92.fs_based", *a, **k):
     """
