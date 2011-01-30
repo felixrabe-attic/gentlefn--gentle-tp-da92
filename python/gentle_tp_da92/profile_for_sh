@@ -32,7 +32,7 @@ export G2=GENTLE_TP_DA92_DIR
 # Edit the content of some pointer and store new content at that pointer:
 function ged {
 	g="$1"
-	fn="$(mktemp -t gentle_da92_tmpfile)"
+	fn="$(mktemp -t gentle_tp_da92_tmpfile_XXXXXXXX)"
 	gg get "${g}" > "${fn}" &&
 		"${EDITOR}" "${fn}" &&
 		gg put "${g}" < "${fn}" > /dev/null
@@ -43,7 +43,7 @@ function ged {
 # at that pointer:
 function gedx {
 	g="$1"
-	fn="$(mktemp -t gentle_da92_tmpfile)"
+	fn="$(mktemp -t gentle_tp_da92_tmpfile_XXXXXXXX)"
 	# Copies $fn to clipboard if pbcopy exists or is defined, or fails silently
 	# otherwise:
 	(echo -n "${fn}" | pbcopy) 2> /dev/null
@@ -53,4 +53,3 @@ function gedx {
 		gg put "${g}" < "${fn}" > /dev/null
 	rm -f "${fn}"
 }
-
