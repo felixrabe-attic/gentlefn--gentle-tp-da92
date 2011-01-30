@@ -136,19 +136,18 @@ class _GentleEasyDataStoreWrapper(object):
         else:
             return self.p[pointer_identifiers[0]]  # a string
 
+    @staticmethod
+    def __find_one(gentle_db, identifier):
+        if is_identifier_format_valid(identifier):
+            return identifier
+        identifiers = gentle_db.find(identifier)
+        if len(identifiers) != 1:
+            raise InvalidIdentifierException(identifier)
+        return identifiers[0]
+
     def __setitem__(self, pointer_identifier, content_identifier):
-        if not is_identifier_format_valid(pointer_identifier):
-            identifiers = self.p.find(pointer_identifier)
-            if len(identifiers) != 1:
-                raise InvalidIdentifierException(pointer_identifier)
-            pointer_identifier = identifiers[0]
-
-        if not is_identifier_format_valid(content_identifier):
-            identifiers = self.c.find(content_identifier)
-            if len(identifiers) != 1:
-                raise InvalidIdentifierException(content_identifier)
-            content_identifier = identifiers[0]
-
+        pointer_identifier = self.__find_one(self.p, pointer_identifier)
+        content_identifier = self.__find_one(self.c, content_identifier)
         self.p[partial_pointer_identifier] = content_identifier
 
     def __add__(self, content):
