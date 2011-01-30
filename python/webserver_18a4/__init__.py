@@ -85,7 +85,8 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                     return
                 # Just serve the respective content:
                 header.append('<div style="font-style: italic; color: #999; font-size: smaller;">')
-                header.append('<div style="float: right;">%s</div>' % self.gentle.getdir())
+                gnt = "gentle-tp-da92:%s" % identifier
+                header.append('<div style="float: right;"><a href="%s" title="%s">%s</a></div>' % (gnt, self.gentle.getdir(), gnt))
                 header.append('<a href="/">Home</a> ; Pointer to ')
                 header.append('<a href="/content/%(c)s">content</a>: %(c)s</div>' % dict(c=content))
                 content = self.gentle.get(content)
