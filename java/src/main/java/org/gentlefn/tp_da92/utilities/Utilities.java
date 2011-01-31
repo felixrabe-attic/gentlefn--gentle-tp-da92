@@ -1,5 +1,3 @@
-package org.gentlefn.tp_da92.utilities;
-
 /*
  * Copyright (C) 2010, 2011  Felix Rabe
  *
@@ -16,12 +14,13 @@ package org.gentlefn.tp_da92.utilities;
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package org.gentlefn.tp_da92.utilities;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import org.gentlefn.tp_da92.base.GentleException;
+import java.security.SecureRandom;
+import java.util.Random;
 
 
 public class Utilities {
@@ -30,7 +29,8 @@ public class Utilities {
         // No instances please
     }
 
-    private static final String HEXES = "0123456789abcdef";
+    private static final int IDENTIFIER_LENGTH = 256 / 4;
+    private static final String IDENTIFIER_DIGITS = "0123456789abcdef";
     /**
      * @see http://rgagnon.com/javadetails/java-0596.html
      */
@@ -39,13 +39,34 @@ public class Utilities {
             return null;
         final StringBuilder hex = new StringBuilder(2 * bytes.length);
         for (final byte b : bytes) {
-            hex.append(HEXES.charAt((b & 0xf0) >> 4))
-                .append(HEXES.charAt((b & 0x0f)));
+            hex.append(IDENTIFIER_DIGITS.charAt((b & 0xf0) >> 4))
+                .append(IDENTIFIER_DIGITS.charAt((b & 0x0f)));
         }
         return hex.toString();
     }
 
-    public static String sha256(String byteString) throws GentleException {
+    public static byte[] toHex(byte[] bytes) throws GentleException {
+        try {
+            return encodeBytesToHex(bytes).getBytes("UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new GentleException("implementation error", e);
+        }
+    }
+
+    private static Random rng = new SecureRandom();
+
+    public static byte[] random() throws GentleException {
+        byte[] binaryResult = new byte[IDENTIFIER_LENGTH / 2];
+        rng.nextBytes(binaryResult);
+        return binaryResult;
+    }
+
+    public static byte[] randomId() throws GentleException {
+        return toHex(random());
+    }
+
+    public static byte[] sha256(byte[] bytes) throws GentleException {
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
@@ -55,13 +76,28 @@ public class Utilities {
         }
         digest.reset();
         byte[] result = null;
-        try {
-            result = digest.digest(byteString.getBytes("utf-8"));
+        result = digest.digest(bytes);
+        return result;
+    }
+
+    public static byte[] sha256Id(byte[] bytes) throws GentleException {
+        return toHex(sha256(bytes));
+    }
+
+    public static boolean isIdentifierFormatValid(byte[] identifier) {
+        if (identifier.length != IDENTIFIER_LENGTH)
+            return false;
+        for (final byte b : identifier) {
+            if (IDENTIFIER_DIGITS.indexOf(b) == -1)
+                return false;
         }
-        catch (UnsupportedEncodingException e) {
-            throw new GentleException("Encoding not supported", e);
+        return true;
+    }
+
+    public static void validateIdentifierFormat(byte[] identifier) throws InvalidIdentifierException {
+        if (!isIdentifierFormatValid(identifier)) {
+            throw new InvalidIdentifierException(identifier.toString());
         }
-        return encodeBytesToHex(result);
     }
 
 }

@@ -1,5 +1,3 @@
-package org.gentlefn.tp_da92.base;
-
 /*
  * Copyright (C) 2010, 2011  Felix Rabe
  *
@@ -16,19 +14,28 @@ package org.gentlefn.tp_da92.base;
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package org.gentlefn.tp_da92.datastore.interfaces;
 
-import java.io.File;
-import java.io.IOException;
+import org.gentlefn.tp_da92.utilities.GentleException;
 
 
-public class GentlePointerDB extends GentleBaseDB {
+/**
+ * A Gentle TP-DA92 content database.
+ */
+public interface GentleContentDB extends GentleDB {
 
-    public GentlePointerDB(File directory) throws IOException {
-        super(directory);
-    }
-
-    public String put(String pointerIdentifier, String contentIdentifier) {
-        return contentIdentifier;
-    }
+    /**
+     * Enter content into the content database and return its content
+     * identifier.
+     *
+     * The content identifier is a hash value of the content.  Current
+     * implementations use the SHA-256 value of the content as the content
+     * identifier.
+     *
+     * This method gives priority to pre-existing content.  This means that
+     * content will not be saved if its hash value already exists as a key in
+     * the database.
+     */
+    byte[] add(byte[] content) throws GentleException;
 
 }

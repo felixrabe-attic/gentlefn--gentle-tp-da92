@@ -1,5 +1,3 @@
-package org.gentlefn.tp_da92.base;
-
 /*
  * Copyright (C) 2010, 2011  Felix Rabe
  *
@@ -16,24 +14,17 @@ package org.gentlefn.tp_da92.base;
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-
-import org.gentlefn.tp_da92.utilities.Utilities;
+package org.gentlefn.tp_da92.datastore.interfaces;
 
 
-public class GentleContentDB extends GentleBaseDB {
+/**
+ * The Gentle TP-DA92 data store, consisting of one content database
+ * and one pointer database.
+ */
+public interface GentleDataStore {
 
-    public GentleContentDB(File directory) throws IOException {
-        super(directory);
-    }
+    public GentleContentDB getContentDB();
 
-    public String add(String content) throws GentleException {
-        String contentIdentifier = Utilities.sha256(content);
-        // TODO: save
-        return contentIdentifier;
-    }
+    public GentlePointerDB getPointerDB();
 
 }

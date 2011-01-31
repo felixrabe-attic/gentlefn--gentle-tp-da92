@@ -1,5 +1,3 @@
-package org.gentlefn.tp_da92.base;
-
 /*
  * Copyright (C) 2010, 2011  Felix Rabe
  *
@@ -16,30 +14,23 @@ package org.gentlefn.tp_da92.base;
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package org.gentlefn.tp_da92.datastore.memorybased;
 
-import java.io.File;
-import java.io.IOException;
+import static org.gentlefn.tp_da92.utilities.Utilities.toHex;
+
+import org.gentlefn.tp_da92.datastore.interfaces.GentleContentDB;
+import org.gentlefn.tp_da92.utilities.GentleException;
+import org.gentlefn.tp_da92.utilities.Utilities;
 
 
-public class GentleDataStore {
+class GentleMemoryContentDB extends GentleMemoryDB implements GentleContentDB {
 
-    private File topDirectory;
-    private GentleContentDB contentDB;
-    private GentlePointerDB pointerDB;
-
-    public GentleDataStore(File directory) throws GentleException {
-        topDirectory = directory;
-        try {
-            contentDB = new GentleContentDB(new File(topDirectory, "content_db"));
-            pointerDB = new GentlePointerDB(new File(topDirectory, "pointer_db"));
+    public byte[] add(byte[] content) throws GentleException {
+        final byte[] contentIdentifier = Utilities.sha256Id(content);
+        if (!containsKey(contentIdentifier)) {
+            database.put(contentIdentifier, content);
         }
-        catch (IOException e) {
-            throw new GentleException("Could not instantiate database(s)", e);
-        }
-    }
-
-    public File getDirectory() {
-        return topDirectory;
+        return contentIdentifier;
     }
 
 }

@@ -1,5 +1,3 @@
-package org.gentlefn.tp_da92.base;
-
 /*
  * Copyright (C) 2010, 2011  Felix Rabe
  *
@@ -16,21 +14,22 @@ package org.gentlefn.tp_da92.base;
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package org.gentlefn.tp_da92.utilities;
 
 
-public class GentleException extends Exception {
+public class InvalidIdentifierException extends GentleException {
 
     private static final long serialVersionUID = 1L;
 
-    public GentleException(String message, Throwable cause) {
+    public InvalidIdentifierException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public GentleException(String message) {
+    public InvalidIdentifierException(String message) {
         super(message);
     }
 
-    public GentleException(Throwable cause) {
+    public InvalidIdentifierException(Throwable cause) {
         super(cause);
     }
 

@@ -14,30 +14,31 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.gentlefn.tp_da92;
+package org.gentlefn.networking_506f;
 
 import org.gentlefn.tp_da92.datastore.interfaces.GentleContentDB;
 import org.gentlefn.tp_da92.datastore.interfaces.GentleDataStore;
 import org.gentlefn.tp_da92.datastore.interfaces.GentlePointerDB;
-import org.gentlefn.tp_da92.datastore.memorybased.GentleMemoryDataStore;
 
 
-public class CommandLine {
+public class GentleNetworkingDataStore implements org.gentlefn.tp_da92.datastore.interfaces.GentleDataStore {
 
-    public static void main(String[] args) {
-        try {
-            GentleDataStore gentle = new GentleMemoryDataStore();
-            GentleContentDB contentDB = gentle.getContentDB();
-            GentlePointerDB pointerDB = gentle.getPointerDB();
-            System.out.println("" + gentle + " " + contentDB + " " + pointerDB);
-            byte[] content = "This is some byte crap".getBytes("UTF-8");
-            byte[] contentIdentifier = contentDB.add(content);
-            System.out.println(new String(contentIdentifier));
-        }
-        catch (Exception e) {
-            System.out.println(e);
-            System.exit(1);
-        }
+    private GentleDataStore wrappedDataStore;
+
+    public GentleNetworkingDataStore(GentleDataStore wrappedDataStore) {
+        super();
+        this.wrappedDataStore = wrappedDataStore;
+    }
+
+    public void serve(String address) {
+    }
+
+    public GentleContentDB getContentDB() {
+        return wrappedDataStore.getContentDB();
+    }
+
+    public GentlePointerDB getPointerDB() {
+        return wrappedDataStore.getPointerDB();
     }
 
 }

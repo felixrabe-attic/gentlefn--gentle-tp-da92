@@ -1,5 +1,3 @@
-package org.gentlefn.tp_da92.base;
-
 /*
  * Copyright (C) 2010, 2011  Felix Rabe
  *
@@ -16,19 +14,29 @@ package org.gentlefn.tp_da92.base;
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package org.gentlefn.tp_da92.datastore.memorybased;
 
-import java.io.File;
 
-public class GentleBaseDB {
+import org.gentlefn.tp_da92.datastore.interfaces.GentleDataStore;
 
-    private File directory;
 
-    public File getDirectory() {
-        return directory;
+public class GentleMemoryDataStore implements GentleDataStore {
+
+    private GentleMemoryContentDB contentDB;
+    private GentleMemoryPointerDB pointerDB;
+
+    public GentleMemoryDataStore() {
+        super();
+        contentDB = new GentleMemoryContentDB();
+        pointerDB = new GentleMemoryPointerDB();
     }
 
-    public GentleBaseDB(File directory) {
-        this.directory = directory;
+    public GentleMemoryContentDB getContentDB() {
+        return contentDB;
+    }
+
+    public GentleMemoryPointerDB getPointerDB() {
+        return pointerDB;
     }
 
 }
