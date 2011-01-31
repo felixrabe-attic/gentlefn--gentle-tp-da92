@@ -26,10 +26,11 @@ class _GentleDB(object):
     """
     Base class for Gentle TP-DA92 databases implemented in Python.
 
-    Gentle TP-DA92 databases map identifiers, consisting of 64 lower-case
-    hexadecimal digits ([0-9a-f]), to values.
+    Gentle TP-DA92 databases map identifiers to values.  The current
+    implementations use 256-bit identifiers, represented as 64 lower-case
+    hexadecimal digits (regex: '[0-9a-f]{64}').
 
-    Classes inheriting from GentleBaseDB strive to emulate standard Python
+    Classes inheriting from _GentleDB strive to emulate standard Python
     container types to the greatest extent possible.
 
     Usage example:
@@ -62,13 +63,15 @@ class _GentleDB(object):
         partial_identifier.  Return an unsorted list.  The list may be empty.
 
         If partial_identifier is not specified (default is ""), return the full
-        list of all identifiers.
+        list of all identifiers in the database.
         """
         return []
 
     def keys(self):
         """
         Alias for self.find("").
+
+        Do not override this method in subclasses.
         """
         return self.find("")
 
@@ -94,11 +97,15 @@ class _GentleContentDB(_GentleDB):
 
     def __add__(self, byte_string):
         """
-        Enter content into the content database and return its SHA-256 sum as
-        its content identifier.
+        Enter content into the content database and return its content
+        identifier.
+
+        The content identifier is a hash value of the content.  Current
+        implementations use the SHA-256 value of the content as the content
+        identifier.
 
         This method gives priority to pre-existing content.  This means that
-        content will not be saved if its SHA-256 sum already exists as a key in
+        content will not be saved if its hash value already exists as a key in
         the database.
 
         Example:
@@ -124,8 +131,9 @@ class _GentlePointerDB(_GentleDB):
         """
         Create or change a pointer in the pointer database.
         """
-        # Would be awesome if that worked for self[x]=y!
-        # If you need this return value, use self.__setitem__(x,y) instead.
+        # Tries to return pointer_identifier - would be awesome if that worked
+        # for self[x]=y!  If you need this return value, use
+        # self.__setitem__(x,y) instead.
         return None
 
 
@@ -137,3 +145,5 @@ class GentleDataStore(object):
 
     def __init__(self, *a, **k):
         super(GentleDataStore, self).__init__(*a, **k)
+        self.content_db = None
+        self.pointer_db = None
