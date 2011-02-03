@@ -23,9 +23,14 @@ import email.utils
 import json
 from   json.encoder import encode_basestring_ascii
 import os
-from   xml.sax.saxutils import escape as xml_escape
+from   xml.sax.saxutils import escape as _xml_escape
 
 from gentle_da92de4118f6fa91_next import GentleNext
+
+def xml_escape(*a, **k):
+    result = _xml_escape(*a, **k)
+    result = result.replace('"', '&quot;')
+    return result
 
 
 class HTMLChunk(object):
@@ -211,13 +216,11 @@ class HTMLJSONEncoder(json.JSONEncoder):
             markers = {}
         else:
             markers = None
-        yield '<pre style="clear: both; margin-top: 6px; margin-bottom: 6px;">'
         for i in self._iterencode(o, markers):
             if isinstance(i, HTMLChunk):
                 yield i.string_value
             else:
                 yield xml_escape(i, {'"': '&quot;'})
-        yield "</pre>\n"
 
 
 def main():
@@ -231,7 +234,9 @@ def main():
 
         input = open(input_fn, "rb").read()
         input = json.loads(input)
-        output = json.dumps(input, indent=4, sort_keys=True, cls=HTMLJSONEncoder)
+        output = '<pre style="clear: both; margin-top: 6px; margin-bottom: 6px;">'
+        output += json.dumps(input, indent=4, sort_keys=True, cls=HTMLJSONEncoder)
+        output += "</pre>\n"
         open(output_fn, "wb").write(output)
 
 

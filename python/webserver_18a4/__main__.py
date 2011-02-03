@@ -42,6 +42,11 @@ def build_option_parser():
         "-d", "--gentle-dir", "--directory"
         )
 
+    option_parser.add_option(
+        "--public", default=False, action="store_true",
+        help="Serve to other clients than just 127.0.0.1 as well"
+        )
+
     return option_parser
 
 
@@ -56,7 +61,7 @@ def main():
     options = parse_options()
     port = options.port
     directory = options.gentle_dir
-    webserver(port, directory)
+    webserver(port, directory, public=options.public)
 
 
 if __name__ == "__main__":

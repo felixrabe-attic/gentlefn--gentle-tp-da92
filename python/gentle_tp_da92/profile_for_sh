@@ -22,7 +22,7 @@ alias g='python -m gentle_da92de4118f6fa91_next'
 alias gg='python -m gentle_da92de4118f6fa91_cli'
 alias gentle_tp_da92='python -m gentle_tp_da92.__main__'
 alias g2='python -m gentle_tp_da92.__main__'
-alias pygentle='python -i -c "from gentle_tp_da92 import * ; gentle = easy.Gentle(fs_based)"'
+alias pygentle='python -i -c "from gentle_tp_da92 import * ; gentle = g = easy.Gentle(fs_based)"'
 
 # Shortcuts for the environment variable names in use:
 export G=GENTLE_DA92DE41_DIR

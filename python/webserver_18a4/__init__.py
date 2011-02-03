@@ -42,9 +42,10 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
     def setup(self):
         BaseHTTPRequestHandler.setup(self)
         self.gentle = self.server.gentle
+        self.public = self.server.public
 
     def do_GET(self):  # TODO: this is all too complex and should be refactored into smaller steps
-        if self.client_address[0] != "127.0.0.1":
+        if not self.public and self.client_address[0] != "127.0.0.1":
             return  # do not serve
         path = self.path[1:].split("/")
         if path == [""]:  # default document
@@ -107,12 +108,14 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.send_header("Content-type", "text/html")
                 content = header
+                content += '<pre style="clear: both; margin-top: 6px; margin-bottom: 6px;">'
                 content += json.dumps(json_content, indent=4, sort_keys=True, cls=HTMLJSONEncoder)
+                content += "</pre>\n"
             self.end_headers()
             self.wfile.write(content)
 
 
-def webserver(port=49876, directory=None):
+def webserver(port=49876, directory=None, public=False):
     if directory is not None:
         directory = os.path.abspath(directory)
         if not os.path.exists(directory):
@@ -120,6 +123,7 @@ def webserver(port=49876, directory=None):
     server_address = ("", port)
     httpd = HTTPServer(server_address, HTTPRequestHandler)
     httpd.gentle = GentleNext(directory)
+    httpd.public = public
     try:
         print "Serving directory %r on port %u" % (httpd.gentle.getdir(), port)
         httpd.serve_forever()
