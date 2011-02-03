@@ -58,7 +58,6 @@ class GentleMemoryDB implements GentleDB {
         return result;
     }
 
-    @Override
     public boolean containsKey(byte[] identifier) {
         return database.containsKey(identifier);
     }

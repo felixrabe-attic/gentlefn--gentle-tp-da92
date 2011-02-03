@@ -16,9 +16,7 @@
  */
 package org.gentlefn.networking_506f;
 
-import org.gentlefn.tp_da92.datastore.interfaces.GentleContentDB;
 import org.gentlefn.tp_da92.datastore.interfaces.GentleDataStore;
-import org.gentlefn.tp_da92.datastore.interfaces.GentlePointerDB;
 import org.gentlefn.tp_da92.datastore.memorybased.GentleMemoryDataStore;
 
 
@@ -26,13 +24,11 @@ public class CommandLine {
 
     public static void main(String[] args) {
         try {
-            GentleDataStore gentle = new GentleMemoryDataStore();
-            GentleContentDB contentDB = gentle.getContentDB();
-            GentlePointerDB pointerDB = gentle.getPointerDB();
-            System.out.println("" + gentle + " " + contentDB + " " + pointerDB);
-            byte[] content = "This is some byte crap".getBytes("UTF-8");
-            byte[] contentIdentifier = contentDB.add(content);
-            System.out.println(new String(contentIdentifier));
+            GentleDataStore memoryBased = new GentleMemoryDataStore();
+            GentleNetworkingDataStore networked = new GentleNetworkingDataStore(memoryBased);
+            // System.setProperty("java.library.path", "/usr/local/lib");
+            System.out.println(System.getProperty("java.library.path"));
+            networked.serve("tcp://*:5558");
         }
         catch (Exception e) {
             System.out.println(e);
