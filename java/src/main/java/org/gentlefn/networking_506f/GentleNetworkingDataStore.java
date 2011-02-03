@@ -19,6 +19,7 @@ package org.gentlefn.networking_506f;
 import org.gentlefn.tp_da92.datastore.interfaces.GentleContentDB;
 import org.gentlefn.tp_da92.datastore.interfaces.GentleDataStore;
 import org.gentlefn.tp_da92.datastore.interfaces.GentlePointerDB;
+import org.zeromq.ZMQ;
 
 
 public class GentleNetworkingDataStore implements org.gentlefn.tp_da92.datastore.interfaces.GentleDataStore {
@@ -31,6 +32,18 @@ public class GentleNetworkingDataStore implements org.gentlefn.tp_da92.datastore
     }
 
     public void serve(String address) {
+        ZMQ.Context context = ZMQ.context(1);
+        ZMQ.Socket socket = context.socket(ZMQ.REP);
+        socket.bind(address);
+
+        System.out.println("Listening on " + address + " ...");
+        while (true) {
+            byte[] request = socket.recv(0);
+            System.out.println(new String(request));
+
+            byte[] reply = "Something".getBytes();
+            socket.send(reply, 0);
+        }
     }
 
     public GentleContentDB getContentDB() {
