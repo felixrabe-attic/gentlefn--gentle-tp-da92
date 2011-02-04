@@ -50,7 +50,7 @@ def ss_pack(timestamp, prev_snapshot_id, snapshot_tree_id):
                        snapshot_tree_id.decode("hex"))
 
 def ss_unpack(raw_snapshot):
-    timestamp, prev, tree = struct.unpack(SNAPSHOT_PACK_FORMAT)
+    timestamp, prev, tree = struct.unpack(SNAPSHOT_PACK_FORMAT, raw_snapshot)
     return (timestamp, prev.encode("hex"), tree.encode("hex"))
 
 
@@ -63,133 +63,96 @@ class _GentleDB(data_store_interfaces._GentleDB):
         super(_GentleDB, self).__init__()
         self.ds = data_store
 
-        if SNAPSHOT_POINTER_ID in self.ds.pointer_db:
-            self.snapshot_cid = self.ds.pointer_db[SNAPSHOT_POINTER_ID]
-            raw_snapshot = self.ds.content_db[self.snapshot_cid]
-            timestamp, prev_snapshot_id, snapshot_tree_id = \
-                ss_unpack(raw_snapshot)
-            self.raw_snapshot_root_tree = self.ds.content_db[snapshot_tree_id]
-        else:
-            # We are starting with an empty database:
-            timestamp = int(time.time())
-            prev_snapshot_id = NULL
-            self.raw_snapshot_root_tree = ""
-            snapshot_tree_id = self.ds.content_db + self.raw_snapshot_root_tree
+    def _make_new_snapshot(self, raw_tree):
+        timestamp = int(time.time())
+        prev_snapshot_id = self.ds.snapshot_cid
+        snapshot_tree_id = self.ds.content_db + raw_tree
 
-            raw_snapshot = ss_pack(timestamp, prev_snapshot_id, snapshot_tree_id)
-            self.snapshot_cid = self.ds.content_db + raw_snapshot
-            self.ds.pointer_db[SNAPSHOT_POINTER_ID] = self.snapshot_cid
-
-    def _walk_tree(self, raw_tree, identifier):
-        raise NotImplementedError()
+        raw_snapshot = ss_pack(timestamp, prev_snapshot_id, snapshot_tree_id)
+        self.ds.snapshot_cid = self.ds.content_db + raw_snapshot
+        self.ds.pointer_db[SNAPSHOT_POINTER_ID] = self.ds.snapshot_cid
+        self.ds.raw_snapshot_root_tree = raw_tree
 
     def __getitem__(self, identifier):
         raise NotImplementedError()
 
     def __delitem__(self, identifier):
-        validate_identifier_format(identifier)
-        return None  # TODO!!!
-        validate_identifier_format(identifier)
-        del self.db[identifier]
+        raise NotImplementedError()
 
     def find(self, partial_identifier=""):
-        return None  # TODO!!!
-        identifiers = [i for i in self.db if i.startswith(partial_identifier)]
-        return identifiers
+        raise NotImplementedError()
 
     def __contains__(self, identifier):
-        return bool(self._walk_tree(self.raw_snapshot_root_tree, identifier))
+        raise NotImplementedError()
 
 
 class _GentleContentDB(data_store_interfaces._GentleContentDB, _GentleDB):
 
-    def _walk_tree(self, raw_tree, identifier, level=0):
-        """Find out whether some content exists in the snapshot tree."""
-        self._walk_tree_last = raw_tree
-        if len(identifier) == 0:
-            if len(raw_tree) > 0:  # tree of trees or tree with leaves
-                return True
-            else:
-                return False  # bad luck
-        # identifier may be right-hand remainder of original identifier
-        if len(raw_tree) == 16 * 32 + 1:  # tree of trees (size appended)
-            if len(identifier) == 1:
-                identifier = identifier + "0"
-            index, identifier = identifier[:2].decode("hex") // 16, identifier[1:]
-            tree_id = raw_tree[index*32 : (index+1)*32].encode("hex")
-            raw_tree = self.ds.content_db[tree_id]
-            return self._walk_tree(raw_tree, identifier, level+1)
-        # tree of at most 15 leaf nodes
-        if len(identifier) % 2:
-            identifier = "0" + identifier
-        raw_identifier = identifier.decode("hex")
-        ln = 32 - level // 2
-        for i in range((len(raw_tree) - 1) // ln):
-            if raw_tree[i*ln : (i+1)*ln].startswith(raw_identifier):
-                return True
-        return False
-
     def __getitem__(self, identifier):
-        exists = self._walk_tree(self.raw_snapshot_root_tree, identifier)
-        if not exists:
-            raise KeyError(identifier)
-        return self.db[identifier]
+        raise NotImplementedError()
 
     def __add__(self, byte_string):
-        return None  # TODO!!!
-        content_identifier = sha256(byte_string).hexdigest()
-        if not content_identifier in self.db:
-            self.db[content_identifier] = byte_string
-        return content_identifier
+        hex_identifier = self.ds.content_db + byte_string
+        raw_tree = self.ds.raw_snapshot_root_tree
+        level = 0
+        if len(raw_tree) == 16*32+1:  # 16 IDs + size
+            raise NotImplementedError()
+        # up to 15 (right-hand-partial) IDs
+        tree_size = len(raw_tree) // 32
+        raw_stored_ids = [raw_tree[i*32:(i+1)*32] for i in range(tree_size)]
+        raw_identifier = hex_identifier.decode("hex")
+        if raw_identifier in raw_stored_ids:
+            return hex_identifier
+        raw_stored_ids = sorted(raw_stored_ids + [raw_identifier])
+        if len(raw_stored_ids) > 15:
+            new_trees = [[] for i in range(16)]
+            for raw_stored_id in raw_stored_ids:
+                hex_stored_id = raw_stored_ids.encode("hex")
+                index = IDENTIFIER_DIGITS.index(hex_stored_id[level])
+                new_trees[index].append(raw_stored_id)
+            new_tree_size = sum(len(t) for t in new_trees)
+            new_tree_ids = [self.ds.content_db + "".join(t) for t in new_trees]
+            nts = chr(min(255, new_tree_size))
+            raw_tree = "".join(i.decode("hex") for i in new_tree_ids) + nts
+        else:
+            raw_tree = "".join(raw_stored_ids)
+        self._make_new_snapshot(raw_tree)
+        return hex_identifier
 
 
 class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
 
-    def _walk_tree(self, raw_tree, identifier, level=0):
-        """Find a pointer in the snapshot tree."""
-        self._walk_tree_last = raw_tree
-        if len(identifier) == 0:
-            if len(raw_tree) > 0:  # tree of trees or tree with leaves
-                return True
-            else:
-                return None  # bad luck
-        # identifier may be right-hand remainder of original identifier
-        if len(raw_tree) == 16 * 32 + 1:  # tree of trees (size appended)
-            if len(identifier) == 1:
-                identifier = identifier + "0"
-            index, identifier = identifier[:2].decode("hex") // 16, identifier[1:]
-            tree_id = raw_tree[index*32 : (index+1)*32].encode("hex")
-            raw_tree = self.ds.content_db[tree_id]
-            return self._walk_tree(raw_tree, identifier, level+1)
-        # tree of at most 15 leaf nodes
-        if len(identifier) % 2:
-            identifier = "0" + identifier
-        raw_identifier = identifier.decode("hex")
-        ln = 32 - level // 2
-        lnpv = ln + 32  # ln plus size of pointer value
-        for i in range((len(raw_tree) - 1) // lnpv):
-            if raw_tree[i*lnpv : i*lnpv+ln].startswith(raw_identifier):
-                pv = raw_tree[i*lnpv+ln : (i+1)*lnpv]
-                return pv.encode("hex")
-        return None
-
     def __getitem__(self, identifier):
-        content_id = self._walk_tree(self.raw_snapshot_root_tree, identifier)
-        if content_id is None:
-            raise KeyError(identifier)
-        return content_id
+        raise NotImplementedError()
 
     def __setitem__(self, pointer_identifier, content_identifier):
-        return None  # TODO!!!
-        validate_identifier_format(pointer_identifier)
-        validate_identifier_format(content_identifier)
-        self.db[pointer_identifier] = content_identifier
-        return pointer_identifier
+        raise NotImplementedError()
 
 
 class GentleDataStore(data_store_interfaces.GentleDataStore):
 
     def __init__(self, data_store):
         super(GentleDataStore, self).__init__()
-        self.content_db = _GentleContentDB(data_store)
-        self.pointer_db = _GentlePointerDB(data_store)
+
+        self.ds = data_store
+
+        if SNAPSHOT_POINTER_ID in self.ds.pointer_db:
+            self.ds.snapshot_cid = self.ds.pointer_db[SNAPSHOT_POINTER_ID]
+            raw_snapshot = self.ds.content_db[self.ds.snapshot_cid]
+            timestamp, prev_snapshot_id, snapshot_tree_id = \
+                ss_unpack(raw_snapshot)
+            self.ds.raw_snapshot_root_tree = self.ds.content_db[snapshot_tree_id]
+        else:
+            # We are starting with an empty database:
+            timestamp = int(time.time())
+            prev_snapshot_id = NULL
+            raw_tree = ""
+            snapshot_tree_id = self.ds.content_db + raw_tree
+
+            raw_snapshot = ss_pack(timestamp, prev_snapshot_id, snapshot_tree_id)
+            self.ds.snapshot_cid = self.ds.content_db + raw_snapshot
+            self.ds.pointer_db[SNAPSHOT_POINTER_ID] = self.ds.snapshot_cid
+            self.ds.raw_snapshot_root_tree = raw_tree
+
+        self.content_db = _GentleContentDB(self.ds)
+        self.pointer_db = _GentlePointerDB(self.ds)
