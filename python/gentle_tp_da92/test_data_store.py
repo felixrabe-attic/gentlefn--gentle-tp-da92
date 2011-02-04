@@ -23,6 +23,8 @@ from __future__ import print_function
 
 from hashlib import sha256
 
+from gentle_tp_da92 import utilities
+
 
 def test(data_store):
     """
@@ -84,13 +86,17 @@ def test(data_store):
 
     # Randomized testing
     import random, os
-    for i in range(512):
-        ln = random.randrange(512)
-        content = os.urandom(ln)
-        c = cdb + content
+    random_data = []
+    for i in range(800):
+        random_data.append(os.urandom(random.randrange(5000)))
+    for i, rnd in enumerate(random_data):
+        assert len(cdb.find()) == i + 2
+        c = cdb + rnd
+        assert len(cdb.find()) == i + 3
         assert c in cdb
         assert c not in pdb
-        assert cdb[c] == content
+        assert c == sha256(rnd).hexdigest()
+        assert cdb[c] == rnd
         assert cdb.find(c) == [c]
 
         try:
@@ -106,6 +112,12 @@ def test(data_store):
         assert pdb[p] == c
         assert p not in cdb
         assert pdb.find(p) == [p]
+        p = utilities.random()
+        pdb[p] = c
+        assert p in pdb
+        assert pdb[p] == c
+        assert p not in cdb
+        assert pdb.find(p) == [p]
 
         try:
             p[:-1] in pdb  # should raise an exception
@@ -113,14 +125,6 @@ def test(data_store):
             assert True
         else:
             assert False
-
-        del cdb[c]
-        assert c not in cdb
-        assert p in pdb
-        assert pdb[p] == c
-
-        del pdb[p]
-        assert p not in pdb
 
     return "PASS"
 
