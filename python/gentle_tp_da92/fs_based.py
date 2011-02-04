@@ -76,6 +76,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
         return identifiers
 
     def __contains__(self, identifier):
+        validate_identifier_format(identifier)
         filename = os.path.join(self.directory, identifier)
         return os.path.exists(filename)
 

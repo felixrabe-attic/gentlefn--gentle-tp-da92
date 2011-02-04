@@ -61,6 +61,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
 
     def __contains__(self, identifier):
         self.log("CONTAINS << %r" % identifier)
+        validate_identifier_format(identifier)
         result = identifier in self.db
         self.log("CONTAINS >> ok: %r" % result)
         return result
@@ -100,5 +101,6 @@ class GentleDataStore(data_store_interfaces.GentleDataStore):
 
     def __init__(self, data_store, logfile):
         super(GentleDataStore, self).__init__()
+        self.data_store = data_store
         self.content_db = _GentleContentDB(data_store.content_db, logfile)
         self.pointer_db = _GentlePointerDB(data_store.pointer_db, logfile)

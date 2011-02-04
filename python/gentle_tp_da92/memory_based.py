@@ -56,6 +56,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
         return identifiers
 
     def __contains__(self, identifier):
+        validate_identifier_format(identifier)
         return identifier in self.db
 
 
