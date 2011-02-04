@@ -8,6 +8,7 @@ from    . import utilities
 from    . import data_store_interfaces
 from    . import fs_based
 from    . import memory_based
+from    . import debugging_wrapper
 
 # Gentle TP-DA92 Python API module:
 from    . import easy
