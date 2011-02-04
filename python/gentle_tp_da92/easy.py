@@ -36,6 +36,7 @@ from   functools import partial
 import os
 import sys
 
+from   .data_store_interfaces import GentleDataStore
 from   .utilities import *
 
 isvalid = is_identifier_format_valid
@@ -203,19 +204,20 @@ class _GentleEasyDataStoreWrapper(object):
         return False
 
 
-def Gentle(implementation_module="gentle_tp_da92.fs_based", *a, **k):
+def Gentle(implementation="gentle_tp_da92.fs_based", *a, **k):
     """
     Factory function that returns a Gentle TP-DA92 data store object.
 
     The user may provide an implementation module as the first argument, either
     a string or a module.  It defaults to gentle_tp_da92.fs_based.
     """
-    if isinstance(implementation_module, basestring):
-        __import__(implementation_module)
-        implementation_module = sys.modules[implementation_module]
+    if isinstance(implementation, basestring):
+        __import__(implementation)
+        implementation = sys.modules[implementation]
 
-    # Simplify arguments based on the implementation_module:
-    a, k = _init_simplifiers[implementation_module](*a, **k)
-    gentle_data_store = implementation_module.GentleDataStore(*a, **k)
-    gentle = _GentleEasyDataStoreWrapper(gentle_data_store)
+    if not isinstance(implementation, GentleDataStore):  # then make it one
+        # Simplify arguments based on the implementation_module:
+        a, k = _init_simplifiers[implementation](*a, **k)
+        implementation = implementation.GentleDataStore(*a, **k)
+    gentle = _GentleEasyDataStoreWrapper(implementation)  # wrap it
     return gentle
