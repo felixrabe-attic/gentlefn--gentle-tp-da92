@@ -22,6 +22,8 @@ strings in the format "yyyy-mm-dd HH:MM:SS +OFST", which conform to ISO 8601.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function, absolute_import
+
 from   datetime import datetime
 import time
 
@@ -47,7 +49,7 @@ def get_localtime_with_offset(t):
 def format_time_with_offset(t, offset_arg=None):
     tt, offset = get_localtime_with_offset(t)
     if offset_arg is not None:
-        offset = offset_arg
+        offset = offset_arg  # TODO: what to do if offset_arg differs from offset?
     # # TODO: this is wrong - file a bug for bzr:
     # offset_str = " %+03d%02d" % (offset / 3600, (offset / 60) % 60)
     offset_sign = "-" if offset < 0 else "+"
