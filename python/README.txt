@@ -210,22 +210,28 @@ methods of the Gentle class:
 Ideas for future features
 -------------------------
 
-* Proper setup.py for installing the modules
-* Public key encryption and signature
-* Fine-grained web of trust
+Near future:
+
+* Feature-parity for the new CLI, and remove old code
+* Global undo (work in progress)
+* Software execution
+* Setup: Proper setup.py for installing the modules
+* Streaming: Use file(-like) objects for content
+* Authentication: For all network communication
+* Encryption: Public key encryption and signature
+* Data store delegation / aggregation / ...
+* Graphical User Interface:
+* Java and C(++) ports of the Python interfaces and (some of the) classes
+
+More out there
+
 * Fine-grained software and data structure modularity and distribution
-* Fine-grained commerce (Flattr? Bitcoin?)
-* Facilities for merging (parts of) multiple repositories together
-* A graphical user interface
-* Smallest possible bootstrapping
-    - Move most Python code into the Gentle data store
-* Version control and global undo
+* Fine-grained commerce integration (Flattr? Bitcoin?)
 * Indexed meta data (maybe employing map/reduce)
 * Interfaces to legacy software:
-    - virtual file system (FUSE)
-    - mail server (SMTP + IMAP/POP3)
-    - HTTP
-* Programming language APIs for C, C#, Java, Javascript, Perl, PHP, Python 3
-* Email
-* Programming IDE
-* The Web how it should have been
+    - virtual file system (FUSE) for exposing a data store as mutable files (and directories)
+      - A prototype FUSE-VFS in the other direction is already included
+    - mail proxy (SMTP + IMAP/POP3)
+    - XMPP?
+    - Ports to / APIs for Bash(!), C#, Javascript, Lua, Perl, PHP, Python 3, Ruby
+* Advanced programming environment (IDE) based on global undo, execution, GUI
