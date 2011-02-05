@@ -8,11 +8,13 @@ import sys
 from gentle_tp_da92 import *
 from gentle_tp_da92 import journaled_data_store
 
-def mk_ds():
-    memory_ds = memory_based.GentleDataStore()
-    debug_ds = debugging_wrapper.GentleDataStore(memory_ds, sys.stdout)
-    ds = journaled_data_store.GentleDataStore(debug_ds)
-    return ds
+rnd = utilities.random
+
+def mkg():
+    memory_ds = Gentle(memory_based)
+    debug_ds = Gentle(debugging_wrapper, memory_ds, show_content=True)
+    g = Gentle(journaled_data_store, debug_ds)
+    return g
 
 def main():
     mk_ds()

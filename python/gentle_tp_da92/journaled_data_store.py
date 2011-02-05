@@ -29,29 +29,29 @@ import time
 
 from   . import data_store_interfaces
 from   . import debugging_wrapper
+from   . import json
 from   .utilities import *
 
 SNAPSHOT_POINTER_ID = \
     "30daa8eb0352eee06dbae0affe4594208590356fcd05062995323bc43ff98f92"
 
-NULL = \
-    "0000000000000000000000000000000000000000000000000000000000000000"
 
-SNAPSHOT_PACK_FORMAT = (
-    "!" +       # Network byte order
-    "Q" +       # UTC timestamp ( int(time.time()) )
-    "32s" +     # Previous snapshot content identifier
-    "32s"       # Snapshot tree content identifier
-    )
+def load_snapshot(ds, snapshot_cid=None):
+    if snapshot_cid is None:
+        snapshot_cid = ds.pointer_db[SNAPSHOT_POINTER_ID]
+    snapshot = json.loads(ds.content_db[snapshot_cid])
+    sn_ctree_cid, sn_ptree_cid, timestamp, sn_prev_cid = snapshot
+    sn_ctree = json.loads(ds.content_db[sn_ctree_cid])
+    sn_ptree = json.loads(ds.content_db[sn_ptree_cid])
+    return snapshot_cid, sn_ctree, sn_ptree, timestamp, sn_prev_cid
 
-def ss_pack(timestamp, prev_snapshot_id, snapshot_tree_id):
-    return struct.pack(SNAPSHOT_PACK_FORMAT, timestamp,
-                       prev_snapshot_id.decode("hex"),
-                       snapshot_tree_id.decode("hex"))
-
-def ss_unpack(raw_snapshot):
-    timestamp, prev, tree = struct.unpack(SNAPSHOT_PACK_FORMAT, raw_snapshot)
-    return (timestamp, prev.encode("hex"), tree.encode("hex"))
+def dump_snapshot(ds, sn_ctree, sn_ptree, timestamp, sn_prev_cid):
+    sn_ctree_cid = ds.content_db + json.dumps(sn_ctree)
+    sn_ptree_cid = ds.content_db + json.dumps(sn_ptree)
+    snapshot = [sn_ctree_cid, sn_ptree_cid, timestamp, sn_prev_cid]
+    snapshot_cid = ds.content_db + json.dumps(snapshot)
+    ds.pointer_db[SNAPSHOT_POINTER_ID] = snapshot_cid
+    return snapshot_cid
 
 
 class _GentleDB(data_store_interfaces._GentleDB):
@@ -63,70 +63,151 @@ class _GentleDB(data_store_interfaces._GentleDB):
         super(_GentleDB, self).__init__()
         self.ds = data_store
 
-    def _make_new_snapshot(self, raw_tree):
-        timestamp = int(time.time())
-        prev_snapshot_id = self.ds.snapshot_cid
-        snapshot_tree_id = self.ds.content_db + raw_tree
+    def _dump_snapshot(self):
+        self.ds.sn_prev_cid = dump_snapshot(self.ds,
+                                            self.ds.sn_ctree,
+                                            self.ds.sn_ptree,
+                                            int(time.time()),
+                                            self.ds.sn_prev_cid)
 
-        raw_snapshot = ss_pack(timestamp, prev_snapshot_id, snapshot_tree_id)
-        self.ds.snapshot_cid = self.ds.content_db + raw_snapshot
-        self.ds.pointer_db[SNAPSHOT_POINTER_ID] = self.ds.snapshot_cid
-        self.ds.raw_snapshot_root_tree = raw_tree
+    def _walk_tree(self, tree, identifier):
+        traversed_trees = []
+        while True:  # assuming we virtually never hit the least-significant part
+            if len(tree) == 17:  # 16 subtrees plus 1 size field
+                index = IDENTIFIER_DIGITS.index(identifier[len(traversed_trees)])
+                traversed_trees.append(tree)
+                tree_cid = tree[index]
+                tree = self.db.content_db[tree_cid]
+            else:  # up to 15 leaves
+                break
+        return traversed_trees, tree
+
+    def _reorder_tree(self, new_tree, level):
+        new_tree_size = len(new_tree)
+        if len(new_tree) > 15:  # split up
+            tree = new_tree
+            new_trees = [[] for i in range(16)]
+            for tree_data in tree:
+                identifier = self._get_identifier_from_tree_data(tree_data)
+                index = IDENTIFIER_DIGITS.index(identifier[level])
+                new_trees[index].append(tree_data)
+            new_tree_cids = []
+            for new_tree in new_trees:
+                new_tree, _ignore = self._reorder_tree(new_tree, level+1)
+                new_tree_cid = self.ds.content_db + json.dumps(new_tree)
+                new_tree_cids.append(new_tree_cid)
+            return new_tree_cids + [len(tree)], new_tree_size
+        # return
+        return new_tree, new_tree_size
+
+    def _propagate_tree_change_upwards(self, traversed_trees, new_tree, identifier):
+        new_tree, new_tree_size = self._reorder_tree(new_tree, len(traversed_trees))
+        # Propagate change upwards
+        while traversed_trees:
+            new_tree_cid = self.ds.content_db + json.dumps(new_tree)
+            new_tree = traversed_trees.pop()
+            index = IDENTIFIER_DIGITS.index(identifier[len(traversed_trees)])
+            old_tree_size = json.loads(self.ds.content_db[new_tree[index]])[16]
+            new_tree[index] = new_tree_cid
+            new_tree_size = new_tree[16] - old_tree_size + new_tree_size
+            new_tree[16] = new_tree_size
+        self._set_tree(new_tree)
 
     def __getitem__(self, identifier):
-        raise NotImplementedError()
+        validate_identifier_format(identifier)
+        traversed_trees, tree = self._walk_tree(self._get_tree(), identifier)
+        for tree_data in tree:
+            leaf = self._get_identifier_from_tree_data(tree_data)
+            if leaf == identifier:
+                return self._get_content_from_tree_data(tree_data)
+        # Content not found
+        raise KeyError(identifier)
 
     def __delitem__(self, identifier):
-        raise NotImplementedError()
+        validate_identifier_format(identifier)
+        traversed_trees, tree = self._walk_tree(self._get_tree(), identifier)
+        for tree_data in tree:
+            leaf = self._get_identifier_from_tree_data(tree_data)
+            if leaf == identifier:  # found
+                break
+        else:  # content not found in snapshot
+            raise KeyError(identifier)
+        # Remove content
+        tree.remove(tree_data)
+        self._propagate_tree_change_upwards(traversed_trees, tree, identifier)
+        self._dump_snapshot()
 
     def find(self, partial_identifier=""):
         raise NotImplementedError()
 
     def __contains__(self, identifier):
-        raise NotImplementedError()
+        validate_identifier_format(identifier)
+        traversed_trees, tree = self._walk_tree(self._get_tree(), identifier)
+        for tree_data in tree:
+            leaf = self._get_identifier_from_tree_data(tree_data)
+            if leaf == identifier:  # Content already in snapshot
+                return True
+        return False
 
 
 class _GentleContentDB(data_store_interfaces._GentleContentDB, _GentleDB):
 
-    def __getitem__(self, identifier):
-        raise NotImplementedError()
+    def _get_tree(self):
+        return self.ds.sn_ctree
+
+    def _set_tree(self, tree):
+        self.ds.sn_ctree = tree
+
+    def _get_identifier_from_tree_data(self, tree_data):
+        return tree_data
+
+    def _get_content_from_tree_data(self, tree_data):
+        return self.ds.content_db[tree_data]
 
     def __add__(self, byte_string):
-        hex_identifier = self.ds.content_db + byte_string
-        raw_tree = self.ds.raw_snapshot_root_tree
-        level = 0
-        if len(raw_tree) == 16*32+1:  # 16 IDs + size
-            raise NotImplementedError()
-        # up to 15 (right-hand-partial) IDs
-        tree_size = len(raw_tree) // 32
-        raw_stored_ids = [raw_tree[i*32:(i+1)*32] for i in range(tree_size)]
-        raw_identifier = hex_identifier.decode("hex")
-        if raw_identifier in raw_stored_ids:
-            return hex_identifier
-        raw_stored_ids = sorted(raw_stored_ids + [raw_identifier])
-        if len(raw_stored_ids) > 15:
-            new_trees = [[] for i in range(16)]
-            for raw_stored_id in raw_stored_ids:
-                hex_stored_id = raw_stored_ids.encode("hex")
-                index = IDENTIFIER_DIGITS.index(hex_stored_id[level])
-                new_trees[index].append(raw_stored_id)
-            new_tree_size = sum(len(t) for t in new_trees)
-            new_tree_ids = [self.ds.content_db + "".join(t) for t in new_trees]
-            nts = chr(min(255, new_tree_size))
-            raw_tree = "".join(i.decode("hex") for i in new_tree_ids) + nts
-        else:
-            raw_tree = "".join(raw_stored_ids)
-        self._make_new_snapshot(raw_tree)
-        return hex_identifier
+        identifier = self.ds.content_db + byte_string
+        traversed_trees, tree = self._walk_tree(self._get_tree(), identifier)
+        for tree_data in tree:
+            leaf = self._get_identifier_from_tree_data(tree_data)
+            if leaf == identifier:  # Content already in snapshot
+                return identifier
+        # Content not found in current snapshot
+        new_tree = sorted(tree + [identifier])
+        self._propagate_tree_change_upwards(traversed_trees, new_tree, identifier)
+        self._dump_snapshot()
+        return identifier
 
 
 class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
 
-    def __getitem__(self, identifier):
-        raise NotImplementedError()
+    def _get_tree(self):
+        return self.ds.sn_ptree
 
-    def __setitem__(self, pointer_identifier, content_identifier):
-        raise NotImplementedError()
+    def _set_tree(self, tree):
+        self.ds.sn_ptree = tree
+
+    def _get_identifier_from_tree_data(self, tree_data):
+        return tree_data[0]
+
+    def _get_content_from_tree_data(self, tree_data):
+        return tree_data[1]
+
+    def __setitem__(self, identifier, content_identifier):
+        validate_identifier_format(identifier)
+        validate_identifier_format(content_identifier)
+        traversed_trees, tree = self._walk_tree(self._get_tree(), identifier)
+        for tree_data in tree:
+            leaf = self._get_identifier_from_tree_data(tree_data)
+            if leaf == identifier:  # Pointer already in snapshot - overwrite
+                tree_data[1] = content_identifier
+                new_tree = tree
+                break
+        else:
+            # Pointer not found in current snapshot
+            new_tree = sorted(tree + [[identifier, content_identifier]])
+        self._propagate_tree_change_upwards(traversed_trees, new_tree, identifier)
+        self._dump_snapshot()
+        return identifier
 
 
 class GentleDataStore(data_store_interfaces.GentleDataStore):
@@ -137,22 +218,21 @@ class GentleDataStore(data_store_interfaces.GentleDataStore):
         self.ds = data_store
 
         if SNAPSHOT_POINTER_ID in self.ds.pointer_db:
-            self.ds.snapshot_cid = self.ds.pointer_db[SNAPSHOT_POINTER_ID]
-            raw_snapshot = self.ds.content_db[self.ds.snapshot_cid]
-            timestamp, prev_snapshot_id, snapshot_tree_id = \
-                ss_unpack(raw_snapshot)
-            self.ds.raw_snapshot_root_tree = self.ds.content_db[snapshot_tree_id]
+            ( self.ds.sn_prev_cid,
+              self.ds.sn_ctree,
+              self.ds.sn_ptree,
+              timestamp,
+              sn_prev_cid ) = load_snapshot(self.ds)
         else:
             # We are starting with an empty database:
-            timestamp = int(time.time())
-            prev_snapshot_id = NULL
-            raw_tree = ""
-            snapshot_tree_id = self.ds.content_db + raw_tree
-
-            raw_snapshot = ss_pack(timestamp, prev_snapshot_id, snapshot_tree_id)
-            self.ds.snapshot_cid = self.ds.content_db + raw_snapshot
-            self.ds.pointer_db[SNAPSHOT_POINTER_ID] = self.ds.snapshot_cid
-            self.ds.raw_snapshot_root_tree = raw_tree
+            self.ds.sn_ctree = []
+            self.ds.sn_ptree = []
+            sn_prev_cid = None
+            self.ds.sn_prev_cid = dump_snapshot(self.ds,
+                                                self.ds.sn_ctree,
+                                                self.ds.sn_ptree,
+                                                int(time.time()),
+                                                sn_prev_cid)
 
         self.content_db = _GentleContentDB(self.ds)
         self.pointer_db = _GentlePointerDB(self.ds)
