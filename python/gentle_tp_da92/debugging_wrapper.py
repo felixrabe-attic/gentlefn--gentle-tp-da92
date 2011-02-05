@@ -20,6 +20,7 @@ Gentle TP-DA92 - Debugging Wrapper Data Store Module.
 # License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from   hashlib import sha256
+import sys
 
 from   . import data_store_interfaces
 from   .utilities import *
@@ -37,14 +38,19 @@ class _LoggerWrapper(object):
 
 class _GentleDB(data_store_interfaces._GentleDB):
 
-    def __init__(self, db):
+    def __init__(self, db, show_content=False):
         super(_GentleDB, self).__init__()
         self.db = db
+        self.show_content = show_content
 
     def __getitem__(self, identifier):
         self.log("GET << %r" % identifier)
         content = self.db[identifier]
-        self.log("GET >> ok: (len) %u" % len(content))
+        if self.show_content:
+            cdisp = "%r" % content
+        else:
+            cdisp = "(len) %u" % len(content)
+        self.log("GET >> ok: %s" % cdisp)
         return content
 
     def __delitem__(self, identifier):
@@ -69,13 +75,17 @@ class _GentleDB(data_store_interfaces._GentleDB):
 
 class _GentleContentDB(data_store_interfaces._GentleContentDB, _GentleDB):
 
-    def __init__(self, db, logfile):
-        super(_GentleContentDB, self).__init__(db)
+    def __init__(self, db, logfile, show_content):
+        super(_GentleContentDB, self).__init__(db, show_content)
         self.log = _LoggerWrapper(logfile, "C:")
         self.log("INIT >> ok")
 
     def __add__(self, byte_string):
-        self.log("ADD << (len) %u" % len(byte_string))
+        if self.show_content:
+            cdisp = "%r" % byte_string
+        else:
+            cdisp = "(len) %u" % len(byte_string)
+        self.log("ADD << %s" % cdisp)
         content_identifier = self.db + byte_string
         self.log("ADD >> ok: %r" % content_identifier)
         return content_identifier
@@ -99,8 +109,8 @@ class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
 
 class GentleDataStore(data_store_interfaces.GentleDataStore):
 
-    def __init__(self, data_store, logfile):
+    def __init__(self, data_store, logfile=sys.stderr, show_content=False):
         super(GentleDataStore, self).__init__()
         self.data_store = data_store
-        self.content_db = _GentleContentDB(data_store.content_db, logfile)
+        self.content_db = _GentleContentDB(data_store.content_db, logfile, show_content)
         self.pointer_db = _GentlePointerDB(data_store.pointer_db, logfile)
