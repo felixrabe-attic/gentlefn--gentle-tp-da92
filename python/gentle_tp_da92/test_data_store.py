@@ -138,16 +138,18 @@ def test_all():
     from gentle_tp_da92 import (Gentle,
                                 fs_based,
                                 memory_based,
-                                debugging_wrapper)
+                                debugging_wrapper,
+                                journaled_data_store)
 
     nullwriter = type("", (), {})()
     nullwriter.write = lambda *a, **k: None
 
     data_stores = [
+        (None, Gentle(journaled_data_store, Gentle(memory_based))),
         (None, Gentle(memory_based)),
-        ("Wrapped memory_based", Gentle(debugging_wrapper, Gentle(memory_based), nullwriter)),
-        (None, Gentle(fs_based, tempfile.mkdtemp())),
-        ("Wrapped fs_based", Gentle(debugging_wrapper, Gentle(fs_based, tempfile.mkdtemp()), nullwriter)),
+        # ("Wrapped memory_based", Gentle(debugging_wrapper, Gentle(memory_based), nullwriter)),
+        # (None, Gentle(fs_based, tempfile.mkdtemp())),
+        # ("Wrapped fs_based", Gentle(debugging_wrapper, Gentle(fs_based, tempfile.mkdtemp()), nullwriter)),
         ]
 
     for name, data_store in data_stores:

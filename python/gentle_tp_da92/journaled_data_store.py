@@ -72,14 +72,14 @@ class _GentleDB(data_store_interfaces._GentleDB):
 
     def _walk_tree(self, tree, identifier):
         traversed_trees = []
-        while True:  # assuming we virtually never hit the least-significant part
-            if len(tree) == 17:  # 16 subtrees plus 1 size field
+        while len(identifier) > len(traversed_trees):
+            if len(tree) < 16:  # up to 15 leaves
+                break
+            else:  # 16 subtrees plus 1 size field
                 index = IDENTIFIER_DIGITS.index(identifier[len(traversed_trees)])
                 traversed_trees.append(tree)
                 tree_cid = tree[index]
-                tree = self.db.content_db[tree_cid]
-            else:  # up to 15 leaves
-                break
+                tree = json.loads(self.ds.content_db[tree_cid])
         return traversed_trees, tree
 
     def _reorder_tree(self, new_tree, level):
@@ -107,7 +107,11 @@ class _GentleDB(data_store_interfaces._GentleDB):
             new_tree_cid = self.ds.content_db + json.dumps(new_tree)
             new_tree = traversed_trees.pop()
             index = IDENTIFIER_DIGITS.index(identifier[len(traversed_trees)])
-            old_tree_size = json.loads(self.ds.content_db[new_tree[index]])[16]
+            old_tree = json.loads(self.ds.content_db[new_tree[index]])
+            if len(old_tree) < 16:
+                old_tree_size = len(old_tree)
+            else:
+                old_tree_size = old_tree[16]
             new_tree[index] = new_tree_cid
             new_tree_size = new_tree[16] - old_tree_size + new_tree_size
             new_tree[16] = new_tree_size
@@ -137,8 +141,34 @@ class _GentleDB(data_store_interfaces._GentleDB):
         self._propagate_tree_change_upwards(traversed_trees, tree, identifier)
         self._dump_snapshot()
 
+    def _find_traversal(self, tree):
+        found = []
+        expected_len = tree[16]
+        for subtree_cid in tree[:16]:
+            subtree = json.loads(self.ds.content_db[subtree_cid])
+            if len(subtree) < 16:
+                for tree_data in subtree:
+                    leaf = self._get_identifier_from_tree_data(tree_data)
+                    found.append(leaf)
+            else:
+                found.extend(self._find_traversal(subtree))
+        if len(found) != expected_len:
+            sys.stderr("Unexpected length of subtree")
+            import pdb; pdb.set_trace()
+        return found
+
     def find(self, partial_identifier=""):
-        raise NotImplementedError()
+        validate_identifier_format(partial_identifier, partial=True)
+        traversed_trees, tree = self._walk_tree(self._get_tree(), partial_identifier)
+        if len(tree) < 16:  # leaves
+            found = []
+            for tree_data in tree:
+                leaf = self._get_identifier_from_tree_data(tree_data)
+                if leaf.startswith(partial_identifier):
+                    found.append(leaf)
+        else:  # subtrees, of which all identifiers match
+            found = self._find_traversal(tree)
+        return found
 
     def __contains__(self, identifier):
         validate_identifier_format(identifier)
