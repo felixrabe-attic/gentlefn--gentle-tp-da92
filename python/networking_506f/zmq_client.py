@@ -84,7 +84,13 @@ class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
 
 class GentleDataStore(data_store_interfaces.GentleDataStore):
 
-    def __init__(self, socket):
+    def __init__(self, socket_or_address):
         super(GentleDataStore, self).__init__()
+        if isinstance(socket_or_address, basestring):
+            context = zmq.Context()
+            socket = context.socket(zmq.REQ)
+            socket.connect(socket_or_address)
+        else:
+            socket = socket_or_address
         self.content_db = _GentleContentDB(socket)
         self.pointer_db = _GentlePointerDB(socket)
