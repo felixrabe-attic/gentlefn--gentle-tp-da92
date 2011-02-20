@@ -30,9 +30,9 @@ class NetworkException(Exception): pass
 
 def send_command(db, command, payload):
     socket, kind = db.socket, db.kind
-    socket.send("%s %s %s" % (kind, command, payload))
+    socket.send("%s %s %s\0" % (kind, command, payload))
     reply = socket.recv()
-    status, payload = reply.split(" ", 1)
+    status, payload = reply[:-1].split(" ", 1)
     if status == "ok": return payload
     elif status == "error": raise NetworkException(payload)
     else: raise NetworkException("invalid reply: %r" % reply)

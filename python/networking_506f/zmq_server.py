@@ -57,7 +57,7 @@ class GentleDataStore(data_store_interfaces.GentleDataStore):
         return ""
 
     def process_msg(self, msg):
-        kind, command, payload = msg.split(" ", 2)
+        kind, command, payload = msg[:-1].split(" ", 2)
         db = {"c": self.content_db, "p": self.pointer_db}[kind]
         try:
             method = getattr(self, "_command_" + command)
@@ -65,7 +65,7 @@ class GentleDataStore(data_store_interfaces.GentleDataStore):
         except Exception as e:
             print_exc()
             reply = "error " + str(e)
-        return reply
+        return reply + "\0"
 
     def serve(self, address):
         context = zmq.Context()
