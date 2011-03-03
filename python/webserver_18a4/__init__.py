@@ -33,6 +33,7 @@ __gentle_da92_identifier__ = \
     "18a44d6590c1bb018a4bdacf31ea80ce090d12e1db4c6bc2c21e52cea5cd72ec"
 
 PNG_SIGNATURE = "89504e470d0a1a0a".decode("hex")
+JPEG_SIGNATURE = "ffd8".decode("hex")
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
@@ -103,6 +104,8 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 else:
                     if content[:8] == PNG_SIGNATURE:
                         self.send_header("Content-type", "image/png")
+                    elif content[:2] == JPEG_SIGNATURE:
+                        self.send_header("Content-type", "image/jpeg")
                     else:
                         self.send_header("Content-type", "text/plain")
             else:
