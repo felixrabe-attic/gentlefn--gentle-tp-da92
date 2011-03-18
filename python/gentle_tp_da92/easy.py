@@ -142,7 +142,7 @@ class _GentleEasyDataStoreWrapper(object):
         content_identifiers = self.c.find(identifier)
         pointer_identifiers = self.p.find(identifier)
         all_identifiers = content_identifiers + pointer_identifiers
-        if len(all_identifiers) > 1:
+        if len(all_identifiers) != 1:
             return all_identifiers  # a list
         if content_identifiers:
             return self.c[content_identifiers[0]]  # a string
