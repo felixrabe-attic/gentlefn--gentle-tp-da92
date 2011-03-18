@@ -24,6 +24,7 @@ store.
 
 from __future__ import print_function
 
+import os.path
 import sys
 
 from   ._optparse import *
@@ -174,8 +175,6 @@ class JSON(_Command):
         if context_type[-2:] in (["json", "content"], ["metadata", "content"]):
             context = json.loads(context)
             context_type = []
-        else:
-            context_type = ["raw"]
         return context, context_type
 
     def run(self):
@@ -187,16 +186,19 @@ class JSON(_Command):
                 context_type = ["raw"]
                 continue
             if context is None:
+                if os.path.exists(arg):
+                    arg = open(arg).read().strip()
                 result = g.find(arg)
                 if len(result) != 1:
                     self._bad_expr(arg)
                 result_other = result[0]
                 result = g.c.find(arg)
                 if result:
-                    result = g.c[result[0]]
+                    context = g.c[result[0]]
                 else:
-                    result = g.c[g.p[result_other]]
-                context = json.loads(result)
+                    context = g.c[g.p[result_other]]
+                if context_type != ["raw"]:
+                    context = json.loads(context)
                 continue
             if isinstance(context, list):
                 if arg == ":len":
@@ -211,11 +213,19 @@ class JSON(_Command):
                 continue
             if isinstance(context, dict):
                 if ":" in arg:  # contains the type, must match exactly
-                    if arg == ":keys":
+                    if arg == ":keys" or arg.startswith(":key:"):
+                        _saved_context = context
                         context = sorted(context.keys())
-                        context_type = []
+                        if arg.startswith(":key:"):
+                            key = context[json.loads(arg.split(":", 2)[-1])]
+                            context = _saved_context[key]
+                            arg = key
+                        else:
+                            context_type = []
+                            arg = ""
                     else:
                         context = context[arg]
+                    if context_type != ["raw"]:
                         context_type = arg.split(":")[1:]
                         if isinstance(context, basestring):
                             context, context_type = self._resolve(context, context_type)
@@ -228,13 +238,14 @@ class JSON(_Command):
                         self._bad_expr(arg)
                     key = found_keys[0]
                     context = context[key]
-                    context_type = key.split(":")[1:]
-                    if isinstance(context, basestring):
-                        context, context_type = self._resolve(context, context_type)
+                    if context_type != ["raw"]:
+                        context_type = key.split(":")[1:]
+                        if isinstance(context, basestring):
+                            context, context_type = self._resolve(context, context_type)
                 continue
             self._bad_expr(arg)
 
-        if context_type[-1:] == ["raw"]:
+        if context_type == ["raw"]:
             print(context, end='')
         else:
             json.pprint(context)
