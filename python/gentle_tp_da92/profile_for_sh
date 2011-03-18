@@ -32,6 +32,9 @@ export G2=GENTLE_TP_DA92_DIR
 # Edit the content of some pointer and store new content at that pointer:
 function ged {
 	g="$1"
+	if [ -f "${g}" ] ; then  # file containing the ID
+		g="$(cat "${g}")"
+	fi
 	fn="$(mktemp -t gentle_tp_da92_tmpfile_XXXXXXXX)"
 	gg get "${g}" > "${fn}" &&
 		"${EDITOR}" "${fn}" &&
