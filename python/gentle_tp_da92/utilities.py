@@ -37,7 +37,7 @@ class GentleException(Exception):
     Base class for all exceptions originating in Gentle.
     """
 
-class InvalidIdentifierException(GentleException):
+class InvalidIdentifierException(GentleException, LookupError):
     """
     Invalid Gentle identifier.
     """
@@ -57,14 +57,14 @@ def random():
     """
     return os.urandom(256 / 8).encode("hex")
 
-def is_identifier_format_valid(identifier):
+def is_identifier_format_valid(identifier, partial=False):
     if not isinstance(identifier, basestring): return False
-    if (len(identifier) == IDENTIFIER_LENGTH and
-        all(c in IDENTIFIER_DIGITS for c in identifier)):
-        return True
-    else:
+    if not (len(identifier) <= IDENTIFIER_LENGTH and
+            all(c in IDENTIFIER_DIGITS for c in identifier)):
         return False
+    if partial or len(identifier) == IDENTIFIER_LENGTH: return True
+    return False
 
-def validate_identifier_format(identifier):
-    if not is_identifier_format_valid(identifier):
+def validate_identifier_format(identifier, partial=False):
+    if not is_identifier_format_valid(identifier, partial):
         raise InvalidIdentifierException(identifier)

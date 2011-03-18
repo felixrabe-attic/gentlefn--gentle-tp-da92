@@ -61,6 +61,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
 
     def find(self, partial_identifier=""):
         self.log("FIND << %r" % partial_identifier)
+        validate_identifier_format(partial_identifier, partial=True)
         identifiers = self.db.find(partial_identifier)
         self.log("FIND >> ok: (len) %u" % len(identifiers))
         return identifiers

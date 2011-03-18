@@ -21,9 +21,12 @@ Gentle TP-DA92 - Data Store Testing Module.
 
 from __future__ import print_function
 
-from hashlib import sha256
+import cProfile
+from   hashlib import sha256
+import pdb
+import traceback
 
-from gentle_tp_da92 import utilities
+from   gentle_tp_da92 import utilities
 
 
 def test(data_store):
@@ -35,28 +38,28 @@ def test(data_store):
     >>> test_data_store.test(memory_based.GentleDataStore())
     'PASS'
     """
-    cdb = data_store.content_db
-    pdb = data_store.pointer_db
+    c_db = data_store.content_db
+    p_db = data_store.pointer_db
 
-    assert cdb.find() == []
-    assert pdb.find() == []
+    assert c_db.find() == []
+    assert p_db.find() == []
 
     p = "0b3bef2bde9575c8b3251c3c92a4f99f6b770cc8f6e73509a0276e08b2cb9573"
-    assert p not in cdb
-    assert p not in pdb
+    assert p not in c_db
+    assert p not in p_db
 
     string = "Hello YOU"
-    c = cdb + string
+    c = c_db + string
     assert c == sha256(string).hexdigest()
-    assert c in cdb
-    assert c not in pdb
+    assert c in c_db
+    assert c not in p_db
 
-    pdb[p] = c
-    assert p not in cdb
-    assert p in pdb
-    assert pdb[p] == c
+    p_db[p] = c
+    assert p not in c_db
+    assert p in p_db
+    assert p_db[p] == c
 
-    for db in (cdb, pdb):
+    for db in (c_db, p_db):
         try:
             "" in db  # should raise an exception
         except:
@@ -64,63 +67,63 @@ def test(data_store):
         else:
             assert False
 
-    assert pdb.find(p[:2]) == [p]
-    assert cdb.find(c[:2]) == [c]
+    assert p_db.find(p[:2]) == [p]
+    assert c_db.find(c[:2]) == [c]
 
     string = "Second content"
     old_c = c
-    c = cdb + string
+    c = c_db + string
     assert c == sha256(string).hexdigest()
-    assert c in cdb
+    assert c in c_db
 
-    pdb[p] = c
-    assert p in pdb
-    assert pdb[p] == c
-    assert sorted(cdb.find()) == sorted([old_c, c])
-    assert pdb.find() == [p]
+    p_db[p] = c
+    assert p in p_db
+    assert p_db[p] == c
+    assert sorted(c_db.find()) == sorted([old_c, c])
+    assert p_db.find() == [p]
 
-    del pdb[p]
-    assert p not in pdb
-    assert sorted(cdb.find()) == sorted([old_c, c])
-    assert pdb.find() == []
+    del p_db[p]
+    assert p not in p_db
+    assert sorted(c_db.find()) == sorted([old_c, c])
+    assert p_db.find() == []
 
     # Randomized testing
     import random, os
     random_data = []
-    for i in range(800):
-        random_data.append(os.urandom(random.randrange(5000)))
+    for i in range(300):
+        random_data.append(os.urandom(random.randrange(3000)))
     for i, rnd in enumerate(random_data):
-        assert len(cdb.find()) == i + 2
-        c = cdb + rnd
-        assert len(cdb.find()) == i + 3
-        assert c in cdb
-        assert c not in pdb
+        assert len(c_db.find()) == i + 2
+        c = c_db + rnd
+        assert len(c_db.find()) == i + 3
+        assert c in c_db
+        assert c not in p_db
         assert c == sha256(rnd).hexdigest()
-        assert cdb[c] == rnd
-        assert cdb.find(c) == [c]
+        assert c_db[c] == rnd
+        assert c_db.find(c) == [c]
 
         try:
-            c[:-1] in cdb  # should raise an exception
+            c[:-1] in c_db  # should raise an exception
         except:
             assert True
         else:
             assert False
 
         p = os.urandom(32).encode("hex")
-        pdb[p] = c
-        assert p in pdb
-        assert pdb[p] == c
-        assert p not in cdb
-        assert pdb.find(p) == [p]
+        p_db[p] = c
+        assert p in p_db
+        assert p_db[p] == c
+        assert p not in c_db
+        assert p_db.find(p) == [p]
         p = utilities.random()
-        pdb[p] = c
-        assert p in pdb
-        assert pdb[p] == c
-        assert p not in cdb
-        assert pdb.find(p) == [p]
+        p_db[p] = c
+        assert p in p_db
+        assert p_db[p] == c
+        assert p not in c_db
+        assert p_db.find(p) == [p]
 
         try:
-            p[:-1] in pdb  # should raise an exception
+            p[:-1] in p_db  # should raise an exception
         except:
             assert True
         else:
@@ -152,6 +155,9 @@ def test_all():
         print("Testing %s:" % name)
         try:
             print(test(data_store))
+        except:
+            traceback.print_exc()
+            pdb.post_mortem()
         finally:
             if isinstance(data_store.ds, fs_based.GentleDataStore):
                 shutil.rmtree(data_store.ds.directory)
@@ -162,4 +168,5 @@ def test_all():
 
 
 if __name__ == "__main__":
-    test_all()
+    cProfile.run("test_all()", "test-profile")
+    # test_all()

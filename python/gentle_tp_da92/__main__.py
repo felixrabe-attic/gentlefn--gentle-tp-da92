@@ -52,6 +52,10 @@ class Command(object):
     def get_description():
         return ""
 
+    def parse_args(self, option_parser, args):
+        self.option_parser = self.get_option_parser(option_parser)
+        self.options, self.args = self.option_parser.parse_args(args)
+
     @classmethod
     def get_option_parser(cls, parent_optparser):
         usage = parent_optparser.expand_prog_name(
@@ -65,7 +69,7 @@ class Command(object):
 
         return option_parser
 
-    def run(self, *a, **k):
+    def run(self, common_options):
         pass
 
 
@@ -79,6 +83,21 @@ class Get(Command):
     def get_option_parser(cls, parent_optparser):
         option_parser = super(Get, cls).get_option_parser(parent_optparser)
         return option_parser
+
+    def run(self, common_options):
+        if len(self.args) != 1:
+            self.option_parser.error("one argument expected")
+        gentle = easy.Gentle(common_options.implementation)
+
+
+class Find(Command):
+
+    @staticmethod
+    def get_description():
+        return "Find identifiers starting with the argument in the data store"
+
+    def run(self, common_options):
+        pass
 
 
 class Put(Command):
@@ -122,7 +141,7 @@ def main():
     common_options, args = option_parser.parse_args()
     command = None
     if len(args) > 0:
-        command, args = _all_commands.get(args[0]), args[1:]
+        command, args = _all_commands.get(args[0].lower()), args[1:]
 
     if common_options.help or command is None:
         if command is not None:
@@ -140,10 +159,9 @@ def main():
                 "specific command"))
         sys.exit(0)
 
-    cmd_options, cmd_args = \
-        command.get_option_parser(option_parser).parse_args(args)
-
-    command.run(common_options, cmd_options, cmd_args)
+    command = command()
+    command.parse_args(option_parser, args)
+    command.run(common_options)
 
 
 if __name__ == "__main__":

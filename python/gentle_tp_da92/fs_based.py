@@ -70,6 +70,7 @@ class _GentleDB(data_store_interfaces._GentleDB):
         os.remove(filename)
 
     def find(self, partial_identifier=""):
+        validate_identifier_format(partial_identifier, partial=True)
         partial_filename = os.path.join(self.directory, partial_identifier)
         matches = glob.glob(partial_filename + "*")
         identifiers = [os.path.basename(m) for m in matches]
