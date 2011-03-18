@@ -28,6 +28,7 @@ import sys
 
 from   ._optparse import *
 from   . import easy
+from   . import json
 
 
 _all_commands = {}
@@ -37,12 +38,17 @@ class _CommandMeta(type):
 
     def __init__(cls, name, bases, dict):
         super(_CommandMeta, cls).__init__(name, bases, dict)
-        if cls.__name__ != "Command":
+        if not cls.__name__.startswith("_"):
             _all_commands[cls.get_name()] = cls
 
 
-class Command(object):
+class _Command(object):
     __metaclass__ = _CommandMeta
+
+    def __init__(self, common_options):
+        super(_Command, self).__init__()
+        self.common_options = common_options
+        self.gentle = easy.Gentle(self.common_options.implementation)
 
     @classmethod
     def get_name(cls):
@@ -69,42 +75,202 @@ class Command(object):
 
         return option_parser
 
-    def run(self, common_options):
+    def run(self):
         pass
 
 
-class Get(Command):
-
-    @staticmethod
-    def get_description():
-        return "Get content or a pointer from the data store"
-
-    @classmethod
-    def get_option_parser(cls, parent_optparser):
-        option_parser = super(Get, cls).get_option_parser(parent_optparser)
-        return option_parser
-
-    def run(self, common_options):
-        if len(self.args) != 1:
-            self.option_parser.error("one argument expected")
-        gentle = easy.Gentle(common_options.implementation)
-
-
-class Find(Command):
+class Find(_Command):
 
     @staticmethod
     def get_description():
         return "Find identifiers starting with the argument in the data store"
 
-    def run(self, common_options):
-        pass
+    def run(self):
+        lst = []
+        for arg in self.args:
+            lst += self.gentle.find(arg)
+        for i in sorted(lst):
+            print(i)
 
 
-class Put(Command):
+class FindC(_Command):
 
     @staticmethod
     def get_description():
-        return "Put content or a pointer into the data store"
+        return "Find identifiers starting with the argument in the content database"
+
+    def run(self):
+        lst = []
+        for arg in self.args:
+            lst += self.gentle.c.find(arg)
+        for i in sorted(lst):
+            print(i)
+
+
+class FindP(_Command):
+
+    @staticmethod
+    def get_description():
+        return "Find identifiers starting with the argument in the pointer database"
+
+    def run(self):
+        lst = []
+        for arg in self.args:
+            lst += self.gentle.p.find(arg)
+        for i in sorted(lst):
+            print(i)
+
+
+class GetC(_Command):
+
+    @staticmethod
+    def get_description():
+        return "Get content for a content ID from the content database"
+
+    def run(self):
+        if len(self.args) != 1:
+            self.option_parser.error("one argument expected")
+        arg = self.args[0]
+        result = self.gentle.c.find(arg)
+        if len(result) == 1:
+            print(self.gentle.c[result[0]], end='')
+        else:
+            self.option_parser.error("ambiguous identifier: %r" % arg)
+
+
+class GetP(_Command):
+
+    @staticmethod
+    def get_description():
+        return "Get a content ID for a pointer ID from the pointer database"
+
+    def run(self):
+        if len(self.args) != 1:
+            self.option_parser.error("one argument expected")
+        arg = self.args[0]
+        result = self.gentle.p.find(arg)
+        if len(result) == 1:
+            print(self.gentle.p[result[0]])
+        else:
+            self.option_parser.error("ambiguous identifier: %r" % arg)
+
+
+class JSON(_Command):
+
+    @staticmethod
+    def get_description():
+        return "Evaluate a JSON expression"
+
+    def _bad_expr(self, expr):
+        raise Exception("bad expression: %r" % expr)
+
+    def _resolve(self, context, context_type):
+        g = self.gentle
+        if context_type[-1:] == ["pointer"]:
+            context = self.gentle.p[context]
+            context_type[-1] = "content"
+        if context_type[-1:] == ["content"]:
+            context = self.gentle.c[context]
+        if context_type[-2:] in (["json", "content"], ["metadata", "content"]):
+            context = json.loads(context)
+            context_type = []
+        else:
+            context_type = ["raw"]
+        return context, context_type
+
+    def run(self):
+        g = self.gentle
+        context = None
+        context_type = []
+        for arg in self.args:
+            if arg == ":raw":
+                context_type = ["raw"]
+                continue
+            if context is None:
+                result = g.find(arg)
+                if len(result) != 1:
+                    self._bad_expr(arg)
+                result_other = result[0]
+                result = g.c.find(arg)
+                if result:
+                    result = g.c[result[0]]
+                else:
+                    result = g.c[g.p[result_other]]
+                context = json.loads(result)
+                continue
+            if isinstance(context, list):
+                if arg == ":len":
+                    context = len(context)
+                else:
+                    arg = json.loads(arg)
+                    if not isinstance(arg, int):
+                        self._bad_expr(arg)
+                    context = context[arg]
+                    if context_type[-2:] == ["json", "content"]:
+                        context = g.c[context]
+                continue
+            if isinstance(context, dict):
+                if ":" in arg:  # contains the type, must match exactly
+                    if arg == ":keys":
+                        context = sorted(context.keys())
+                        context_type = []
+                    else:
+                        context = context[arg]
+                        context_type = arg.split(":")[1:]
+                        if isinstance(context, basestring):
+                            context, context_type = self._resolve(context, context_type)
+                else:  # follow contents and pointers dynamically
+                    found_keys = []
+                    for key in context.keys():
+                        if key == arg or key.startswith(arg + ":"):
+                            found_keys.append(key)
+                    if len(found_keys) != 1:
+                        self._bad_expr(arg)
+                    key = found_keys[0]
+                    context = context[key]
+                    context_type = key.split(":")[1:]
+                    if isinstance(context, basestring):
+                        context, context_type = self._resolve(context, context_type)
+                continue
+            self._bad_expr(arg)
+
+        if context_type[-1:] == ["raw"]:
+            print(context, end='')
+        else:
+            json.pprint(context)
+
+
+class Put(_Command):
+
+    @staticmethod
+    def get_description():
+        return "(NOOP) Put content or a pointer into the data store"
+
+    def run(self):
+        self.option_parser.error("not implemented")
+
+
+class Type(_Command):
+
+    @staticmethod
+    def get_description():
+        return "Get the type of an identifier, 'content' or 'pointer'"
+
+    def run(self):
+        if len(self.args) != 1:
+            self.option_parser.error("one argument expected")
+        arg = self.args[0]
+        found_c = self.gentle.c.find(arg)
+        found_p = self.gentle.p.find(arg)
+        len_both = len(found_c) + len(found_p)
+        if len_both > 1:
+            self.option_parser.error("ambiguous identifier: %r" % arg)
+        if len_both < 1:
+            self.option_parser.error("identifier not found: %r" % arg)
+        if found_c:
+            print("content")
+        else:
+            print("pointer")
 
 
 def main():
@@ -150,7 +316,7 @@ def main():
         if command is None:
             print()
             print("All available commands:")
-            for name, command in _all_commands.iteritems():
+            for name, command in sorted(_all_commands.items()):
                 print("    %-7s %s" % (name, command.get_description()))
             print()
             # Shamelessly stolen from 'git --help':
@@ -159,9 +325,9 @@ def main():
                 "specific command"))
         sys.exit(0)
 
-    command = command()
+    command = command(common_options)
     command.parse_args(option_parser, args)
-    command.run(common_options)
+    command.run()
 
 
 if __name__ == "__main__":
