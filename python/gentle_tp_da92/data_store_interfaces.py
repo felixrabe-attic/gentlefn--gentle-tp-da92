@@ -39,7 +39,6 @@ class _GentleDB(object):
     'Content.'
     >>> gentle_db.find(identifier[:10])
     ['<identifier>']
-    >>> del gentle_db[identifier]
     """
 
     def __init__(self, *a, **k):
