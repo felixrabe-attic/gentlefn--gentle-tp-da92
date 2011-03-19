@@ -64,11 +64,6 @@ class _GentleDB(data_store_interfaces._GentleDB):
         content = open(filename, "rb").read()
         return content
 
-    def __delitem__(self, identifier):
-        validate_identifier_format(identifier)
-        filename = os.path.join(self.directory, identifier)
-        os.remove(filename)
-
     def find(self, partial_identifier=""):
         validate_identifier_format(partial_identifier, partial=True)
         partial_filename = os.path.join(self.directory, partial_identifier)
@@ -100,6 +95,11 @@ class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
         filename = os.path.join(self.directory, pointer_identifier)
         create_file_with_mode(filename, 0600).write(content_identifier)
         return pointer_identifier
+
+    def __delitem__(self, identifier):
+        validate_identifier_format(identifier)
+        filename = os.path.join(self.directory, identifier)
+        os.remove(filename)
 
 
 class GentleDataStore(data_store_interfaces.GentleDataStore):

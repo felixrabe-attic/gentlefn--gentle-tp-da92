@@ -51,12 +51,6 @@ class _GentleDB(object):
         """
         return None
 
-    def __delitem__(self, identifier):
-        """
-        Delete an item from the database.
-        """
-        pass
-
     def find(self, partial_identifier=""):
         """
         Find all the identifiers registered in this database that start with
@@ -135,6 +129,12 @@ class _GentlePointerDB(_GentleDB):
         # for self[x]=y!  If you need this return value, use
         # self.__setitem__(x,y) instead.
         return None
+
+    def __delitem__(self, pointer_identifier):
+        """
+        Delete a pointer from the database.
+        """
+        pass
 
 
 class GentleDataStore(object):

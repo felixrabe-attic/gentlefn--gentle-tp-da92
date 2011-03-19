@@ -47,10 +47,6 @@ class _GentleDB(data_store_interfaces._GentleDB):
         content = self.db[identifier]
         return content
 
-    def __delitem__(self, identifier):
-        validate_identifier_format(identifier)
-        del self.db[identifier]
-
     def find(self, partial_identifier=""):
         validate_identifier_format(partial_identifier, partial=True)
         identifiers = [i for i in self.db if i.startswith(partial_identifier)]
@@ -77,6 +73,10 @@ class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
         validate_identifier_format(content_identifier)
         self.db[pointer_identifier] = content_identifier
         return pointer_identifier
+
+    def __delitem__(self, identifier):
+        validate_identifier_format(identifier)
+        del self.db[identifier]
 
 
 class GentleDataStore(data_store_interfaces.GentleDataStore):

@@ -53,12 +53,6 @@ class _GentleDB(data_store_interfaces._GentleDB):
         self.log("GET >> ok: %s" % cdisp)
         return content
 
-    def __delitem__(self, identifier):
-        self.log("DEL << %r" % identifier)
-        validate_identifier_format(identifier)
-        del self.db[identifier]
-        self.log("DEL >> ok")
-
     def find(self, partial_identifier=""):
         self.log("FIND << %r" % partial_identifier)
         validate_identifier_format(partial_identifier, partial=True)
@@ -106,6 +100,12 @@ class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
         self.db[pointer_identifier] = content_identifier
         self.log("SET >> ok")
         return pointer_identifier
+
+    def __delitem__(self, identifier):
+        self.log("DEL << %r" % identifier)
+        validate_identifier_format(identifier)
+        del self.db[identifier]
+        self.log("DEL >> ok")
 
 
 class GentleDataStore(data_store_interfaces.GentleDataStore):

@@ -52,10 +52,6 @@ class _GentleDB(data_store_interfaces._GentleDB):
         content = self._send_command("get", identifier)
         return content
 
-    def __delitem__(self, identifier):
-        validate_identifier_format(identifier)
-        self._send_command("del", identifier)
-
     def find(self, partial_identifier=""):
         reply = self._send_command("find", partial_identifier)
         identifiers = reply.split()
@@ -80,6 +76,10 @@ class _GentlePointerDB(data_store_interfaces._GentlePointerDB, _GentleDB):
         validate_identifier_format(content_identifier)
         self._send_command("set", pointer_identifier + " " + content_identifier)
         return pointer_identifier
+
+    def __delitem__(self, identifier):
+        validate_identifier_format(identifier)
+        self._send_command("del", identifier)
 
 
 class GentleDataStore(data_store_interfaces.GentleDataStore):
