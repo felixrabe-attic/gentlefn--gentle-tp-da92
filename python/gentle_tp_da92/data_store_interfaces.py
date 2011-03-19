@@ -60,6 +60,17 @@ class _GentleDB(object):
         """
         return []
 
+    def findone(self, partial_identifier=""):
+        """
+        Find one identifier registered in this database that starts with
+        partial_identifier.  Return eiter None or the found identifier, or raise
+        an InvalidIdentifierException if several identifiers are found.
+        """
+        id_list = self.find(partial_identifier)
+        if len(id_list) == 0: return None
+        if len(id_list) == 1: return id_list[0]
+        raise InvalidIdentifierException(partial_identifier)
+
     def keys(self):
         """
         Alias for self.find("").
