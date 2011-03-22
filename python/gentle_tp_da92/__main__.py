@@ -212,36 +212,29 @@ class JSON(_Command):
                         context = g.c[context]
                 continue
             if isinstance(context, dict):
-                if ":" in arg:  # contains the type, must match exactly
-                    if arg == ":keys" or arg.startswith(":key:"):
-                        _saved_context = context
-                        context = sorted(context.keys())
-                        if arg.startswith(":key:"):
-                            key = context[json.loads(arg.split(":", 2)[-1])]
-                            context = _saved_context[key]
-                            arg = key
-                        else:
-                            context_type = []
-                            arg = ""
+                if arg == ":keys" or arg.startswith(":key:"):
+                    _saved_context = context
+                    context = sorted(context.keys())
+                    if arg.startswith(":key:"):
+                        key = context[json.loads(arg.split(":", 2)[-1])]
+                        context = _saved_context[key]
+                        arg = key
                     else:
-                        context = context[arg]
-                    if context_type != ["raw"]:
-                        context_type = arg.split(":")[1:]
-                        if isinstance(context, basestring):
-                            context, context_type = self._resolve(context, context_type)
-                else:  # follow contents and pointers dynamically
+                        context_type = []
+                        arg = ""
+                else:
                     found_keys = []
                     for key in context.keys():
-                        if key == arg or key.startswith(arg + ":"):
+                        if key.startswith(arg):
                             found_keys.append(key)
                     if len(found_keys) != 1:
                         self._bad_expr(arg)
                     key = found_keys[0]
                     context = context[key]
-                    if context_type != ["raw"]:
-                        context_type = key.split(":")[1:]
-                        if isinstance(context, basestring):
-                            context, context_type = self._resolve(context, context_type)
+                if context_type != ["raw"]:
+                    context_type = key.split(":")[1:]
+                    if isinstance(context, basestring):
+                        context, context_type = self._resolve(context, context_type)
                 continue
             self._bad_expr(arg)
 
