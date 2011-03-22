@@ -165,25 +165,25 @@ class JSON(_Command):
     def _bad_expr(self, expr):
         raise Exception("bad expression: %r" % expr)
 
-    def _resolve(self, context, context_type):
+    def _resolve(self, context, context_key):
         g = self.gentle
-        if context_type[-1:] == ["pointer"]:
+        if context_key[-1:] == ["pointer"]:
             context = self.gentle.p[context]
-            context_type[-1] = "content"
-        if context_type[-1:] == ["content"]:
+            context_key[-1] = "content"
+        if context_key[-1:] == ["content"]:
             context = self.gentle.c[context]
-        if context_type[-2:] in (["json", "content"], ["metadata", "content"]):
+        if context_key[-2:] in (["json", "content"], ["metadata", "content"]):
             context = json.loads(context)
-            context_type = []
-        return context, context_type
+            context_key = []
+        return context, context_key
 
     def run(self):
         g = self.gentle
         context = None
-        context_type = []
+        context_key = []
         for arg in self.args:
             if arg == ":raw":
-                context_type = ["raw"]
+                context_key = ["raw"]
                 continue
             if context is None:
                 if os.path.exists(arg):
@@ -197,7 +197,7 @@ class JSON(_Command):
                     context = g.c[result[0]]
                 else:
                     context = g.c[g.p[result_other]]
-                if context_type != ["raw"]:
+                if context_key != ["raw"]:
                     context = json.loads(context)
                 continue
             if isinstance(context, list):
@@ -208,7 +208,7 @@ class JSON(_Command):
                     if not isinstance(arg, int):
                         self._bad_expr(arg)
                     context = context[arg]
-                    if context_type[-2:] == ["json", "content"]:
+                    if context_key[-2:] == ["json", "content"]:
                         context = g.c[context]
                 continue
             if isinstance(context, dict):
@@ -220,7 +220,7 @@ class JSON(_Command):
                         context = _saved_context[key]
                         arg = key
                     else:
-                        context_type = []
+                        context_key = []
                         arg = ""
                 else:
                     found_keys = []
@@ -231,14 +231,14 @@ class JSON(_Command):
                         self._bad_expr(arg)
                     key = found_keys[0]
                     context = context[key]
-                if context_type != ["raw"]:
-                    context_type = key.split(":")[1:]
+                if context_key != ["raw"]:
+                    context_key = key.split(":")
                     if isinstance(context, basestring):
-                        context, context_type = self._resolve(context, context_type)
+                        context, context_key = self._resolve(context, context_key)
                 continue
             self._bad_expr(arg)
 
-        if context_type == ["raw"]:
+        if context_key == ["raw"]:
             print(context, end='')
         else:
             json.pprint(context)
