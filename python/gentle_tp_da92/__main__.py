@@ -183,7 +183,7 @@ class JSON(_Command):
         context_key = []
         for arg in self.args:
             if arg == ":raw":
-                context_key = ["raw"]
+                context_key = arg.split(":")
                 continue
             if context is None:
                 if os.path.exists(arg):
@@ -197,7 +197,7 @@ class JSON(_Command):
                     context = g.c[result[0]]
                 else:
                     context = g.c[g.p[result_other]]
-                if context_key != ["raw"]:
+                if context_key != ["", "raw"]:
                     context = json.loads(context)
                 continue
             if isinstance(context, list):
@@ -231,14 +231,14 @@ class JSON(_Command):
                         self._bad_expr(arg)
                     key = found_keys[0]
                     context = context[key]
-                if context_key != ["raw"]:
+                if context_key != ["", "raw"]:
                     context_key = key.split(":")
                     if isinstance(context, basestring):
                         context, context_key = self._resolve(context, context_key)
                 continue
             self._bad_expr(arg)
 
-        if context_key == ["raw"]:
+        if context_key == ["", "raw"]:
             print(context, end='')
         else:
             json.pprint(context)
