@@ -139,6 +139,16 @@ class GetC(_Command):
             self.option_parser.error("ambiguous identifier: %r" % arg)
 
 
+class GetDir(_Command):
+
+    @staticmethod
+    def get_description():
+        return "Get the directory where the database is located"
+    
+    def run(self):
+        print(self.gentle.ds.directory)
+
+
 class GetP(_Command):
 
     @staticmethod
