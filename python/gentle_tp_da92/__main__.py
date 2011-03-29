@@ -218,8 +218,8 @@ class JSON(_Command):
                     if not isinstance(arg, int):
                         self._bad_expr(arg)
                     context = context[arg]
-                    if context_key[-2:] == ["json", "content"]:
-                        context = g.c[context]
+                if isinstance(context, basestring):
+                    context, context_key = self._resolve(context, context_key)
                 continue
             if isinstance(context, dict):
                 if arg == ":keys" or arg.startswith(":key:"):
@@ -229,9 +229,9 @@ class JSON(_Command):
                         key = context[json.loads(arg.split(":", 2)[-1])]
                         context = _saved_context[key]
                         arg = key
-                    else:
+                    else:  # arg == ":keys"
                         context_key = []
-                        arg = ""
+                        arg = key = ""
                 else:
                     found_keys = []
                     for key in context.keys():
@@ -243,8 +243,8 @@ class JSON(_Command):
                     context = context[key]
                 if context_key != ["", "raw"]:
                     context_key = key.split(":")
-                    if isinstance(context, basestring):
-                        context, context_key = self._resolve(context, context_key)
+                if isinstance(context, basestring):
+                    context, context_key = self._resolve(context, context_key)
                 continue
             self._bad_expr(arg)
 
