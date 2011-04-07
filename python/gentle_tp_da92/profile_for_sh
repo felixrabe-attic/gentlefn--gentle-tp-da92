@@ -27,10 +27,13 @@ alias pygentle='python -i -c "from gentle_tp_da92 import * ; gentle = g = easy.G
 # Experimental:
 alias ge='python -m gentle_tp_da92.experimental.gentle_exec'
 
-# Shortcuts for the environment variable names in use:
-export G=GENTLE_DA92DE41_DIR
-export G2=GENTLE_TP_DA92_DIR
-# e.g.: echo "${G}=${!G}" ; export ${G}=".../x/y" ; export ${G2}="${!G}"
+function g_setdir {
+    local d="$(cd "$1" ; pwd)"
+    set -x
+    export GENTLE_DA92DE41_DIR="$d"
+    export GENTLE_TP_DA92_DIR="$d"
+    set +x
+}
 
 # Edit the content of some pointer and store new content at that pointer:
 function ged {
