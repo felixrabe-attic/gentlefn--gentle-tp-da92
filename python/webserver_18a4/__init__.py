@@ -110,7 +110,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                     elif content.startswith(PDF_SIGNATURE):
                         self.send_header("Content-type", "application/pdf")
                     else:
-                        self.send_header("Content-type", "text/plain")
+                        self.send_header("Content-type", "text/plain; charset=utf-8")
             else:
                 self.send_header("Content-type", "text/html")
                 content = header
