@@ -34,6 +34,7 @@ __gentle_da92_identifier__ = \
 
 PNG_SIGNATURE = "89504e470d0a1a0a".decode("hex")
 JPEG_SIGNATURE = "ffd8".decode("hex")
+PDF_SIGNATURE = "%PDF"
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
@@ -102,10 +103,12 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                     content = header
                     content += "<p><i>To see the non-JSON content, click 'content' above.</i></p>"
                 else:
-                    if content[:8] == PNG_SIGNATURE:
+                    if content.startswith(PNG_SIGNATURE):
                         self.send_header("Content-type", "image/png")
-                    elif content[:2] == JPEG_SIGNATURE:
+                    elif content.startswith(JPEG_SIGNATURE):
                         self.send_header("Content-type", "image/jpeg")
+                    elif content.startswith(PDF_SIGNATURE):
+                        self.send_header("Content-type", "application/pdf")
                     else:
                         self.send_header("Content-type", "text/plain")
             else:
